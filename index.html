@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memoria - 単語暗記アプリ</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #app-container { width: 100%; max-width: 500px; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 20px; box-sizing: border-box; }
+        
+        /* ナビゲーションタブ */
+        .nav-tabs { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+        .tab-btn { background: none; border: none; padding: 10px 10px; font-size: 0.95rem; cursor: pointer; color: #888; font-weight: bold; width: 33.3%; text-align: center; }
+        .tab-btn.active { color: #3498db; border-bottom: 3px solid #3498db; }
+
+        /* セクション切り替え */
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* 学習画面のスタイル */
+        .header { text-align: center; margin-bottom: 20px; color: #555; font-size: 14px; }
+        #flashcard { text-align: center; min-height: 250px; display: flex; flex-direction: column; justify-content: center; }
+        .word { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
+        .audio-btn { cursor: pointer; background: none; border: none; font-size: 1.5rem; }
+        .hint, .example { font-style: italic; color: #666; margin: 15px 0; padding: 10px; background: #f9f9f9; border-radius: 8px; }
+        .meta { font-size: 0.9rem; color: #888; margin-bottom: 15px; }
+        .meaning { font-size: 1.5rem; font-weight: bold; color: #e74c3c; margin: 10px 0; }
+        
+        button.action-btn { border: none; border-radius: 8px; padding: 12px 20px; font-size: 1rem; cursor: pointer; font-weight: bold; transition: opacity 0.2s; width: 100%; margin-top: 10px; }
+        button.action-btn:hover { opacity: 0.8; }
+        .btn-primary { background-color: #3498db; color: white; }
+        
+        .rating-container { display: flex; gap: 10px; margin-top: 20px; }
+        .rating-container button { width: 25%; padding: 15px 5px; font-size: 0.9rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-1 { background-color: #e74c3c; } .btn-2 { background-color: #e67e22; } .btn-3 { background-color: #2ecc71; } .btn-4 { background-color: #3498db; }
+        
+        #back-content { display: none; }
+        #completion-msg { display: none; text-align: center; font-size: 1.2rem; color: #2ecc71; font-weight: bold; padding: 50px 0;}
+
+        /* インポート画面のスタイル */
+        textarea { width: 100%; height: 250px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: monospace; box-sizing: border-box; resize: vertical; margin-bottom: 10px; }
+        .msg { font-weight: bold; margin-top: 10px; text-align: center; display: none; }
+        .success-msg { color: #2ecc71; }
+        .error-msg { color: #e74c3c; }
+
+        /* 単語一覧画面のスタイル */
+        .word-list-count { font-size: 0.9rem; color: #666; margin-bottom: 10px; text-align: right; }
+        .word-item { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 10px; position: relative; }
+        .word-item-title { font-size: 1.2rem; font-weight: bold; color: #2c3e50; display: inline-block; margin-right: 5px; }
+        .word-item-pos { font-size: 0.8rem; color: #7f8c8d; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
+        .word-item-meaning { font-size: 1rem; margin: 5px 0; color: #333; }
+        .word-item-status { font-size: 0.75rem; color: #95a5a6; }
+        .delete-btn { position: absolute; top: 12px; right: 12px; background: #ff7675; color: white; border: none; border-radius: 4px; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
+        .delete-btn:hover { background: #d63031; }
+        #word-list-container { max-height: 450px; overflow-y: auto; padding-right: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('study')">学習する</button>
+        <button class="tab-btn" onclick="switchTab('list')">単語一覧</button>
+        <button class="tab-btn" onclick="switchTab('import')">追加</button>
+    </div>
+
+    <div id="study-section" class="section active">
+        <div class="header" id="progress">今日の学習: 残り 0 単語</div>
+        <div id="flashcard">
+            <div class="word"><span id="word-text">word</span> <button class="audio-btn" onclick="playAudio()">🔊</button></div>
+            <div id="front-content">
+                <div class="hint" id="hint-text">hint...</div>
+                <button class="action-btn btn-primary" onclick="showAnswer()">答えを見る (Space)</button>
+            </div>
+            <div id="back-content">
+                <div class="meta">【品詞】<span id="pos-text">noun</span>　【レベル】<span id="cefr-text">C1</span></div>
+                <div class="meaning" id="meaning-text">意味</div>
+                <div class="example" id="example-text">Example.</div>
+                <p style="margin-bottom: 5px; font-size: 0.9rem;">👇 どれくらい覚えていましたか？</p>
+                <div class="rating-container">
+                    <button class="btn-1" onclick="rateCard(1)">忘れた<br><small>(1)</small></button>
+                    <button class="btn-2" onclick="rateCard(2)">難しい<br><small>(2)</small></button>
+                    <button class="btn-3" onclick="rateCard(3)">普 通<br><small>(3)</small></button>
+                    <button class="btn-4" onclick="rateCard(4)">簡 単<br><small>(4)</small></button>
+                </div>
+            </div>
+        </div>
+        <div id="completion-msg">🎉 今日の学習はすべて完了しました！</div>
+    </div>
+
+    <div id="list-section" class="section">
+        <div class="word-list-count" id="total-count">登録総数: 0 単語</div>
+        <div id="word-list-container">
+            </div>
+    </div>
+
+    <div id="import-section" class="section">
+        <p style="font-size: 0.9rem; color: #555;">AIが出力したJSONデータを貼り付けてください。</p>
+        <textarea id="json-input" placeholder='[\n  {\n    "word": "example",\n    "meaning": "例",\n    "pos": "noun",\n    "cefr": "A2",\n    "importance": 3,\n    "example": "This is an example."\n  }\n]'></textarea>
+        <button class="action-btn btn-primary" onclick="importData()">データを登録する</button>
+        <div id="import-success" class="msg success-msg">追加に成功しました！</div>
+        <div id="import-error" class="msg error-msg">エラー: 正しいJSON形式ではありません。</div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'my_vocab_cards';
+    let allCards = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let todaysCards = [];
+    let currentIndex = 0;
+
+    // --- タブ切り替え制御（順番変更に伴うインデックス修正） ---
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        
+        if (tabName === 'study') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('study-section').classList.add('active');
+            refreshStudyList();
+        } else if (tabName === 'list') {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById('list-section').classList.add('active');
+            renderWordList();
+        } else if (tabName === 'import') {
+            document.querySelectorAll('.tab-btn')[2].classList.add('active');
+            document.getElementById('import-section').classList.add('active');
+            document.getElementById('import-success').style.display = 'none';
+            document.getElementById('import-error').style.display = 'none';
+        }
+    }
+
+    // --- インポート処理 ---
+    function importData() {
+        const jsonText = document.getElementById('json-input').value;
+        try {
+            const newWords = JSON.parse(jsonText);
+            if (!Array.isArray(newWords)) throw new Error("JSON is not an array");
+
+            const processedWords = newWords.map(wordObj => ({
+                ...wordObj,
+                id: "vocab_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+                repetition: 0,
+                interval: 0,
+                efactor: 2.5,
+                nextReviewDate: new Date().toISOString()
+            }));
+
+            allCards = allCards.concat(processedWords);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(allCards));
+
+            document.getElementById('import-success').innerText = `${processedWords.length} 単語の追加に成功しました！`;
+            document.getElementById('import-success').style.display = 'block';
+            document.getElementById('import-error').style.display = 'none';
+            document.getElementById('json-input').value = '';
+            
+        } catch (e) {
+            document.getElementById('import-error').style.display = 'block';
+            document.getElementById('import-success').style.display = 'none';
+        }
+    }
+
+    // --- 単語一覧の表示・管理処理 ---
+    function renderWordList() {
+        const container = document.getElementById('word-list-container');
+        document.getElementById('total-count').innerText = `登録総数: ${allCards.length} 単語`;
+        container.innerHTML = '';
+
+        if (allCards.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#888; padding:20px;">登録されている単語がありません。</p>';
+            return;
+        }
+
+        for (let i = allCards.length - 1; i >= 0; i--) {
+            const card = allCards[i];
+            const div = document.createElement('div');
+            div.className = 'word-item';
+            
+            const nextDate = new Date(card.nextReviewDate);
+            const formattedDate = nextDate.toLocaleDateString() + ' ' + nextDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const isReady = nextDate <= new Date() ? '🔥 復習可能' : `⏳ ${formattedDate}`;
+
+            div.innerHTML = `
+                <div>
+                    <span class="word-item-title">${card.word}</span>
+                    <span class="word-item-pos">${card.pos || '品詞不明'}</span>
+                </div>
+                <div class="word-item-meaning">${card.meaning}</div>
+                <div class="word-item-status">
+                    進捗: 連続正解 ${card.repetition}回 / 間隔: ${card.interval}日<br>
+                    次回: ${isReady}
+                </div>
+                <button class="delete-btn" onclick="deleteCard('${card.id}')">削除</button>
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    function deleteCard(id) {
+        if (confirm('この単語を削除してもよろしいですか？')) {
+            allCards = allCards.filter(card => card.id !== id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(allCards));
+            renderWordList();
+        }
+    }
+
+    // --- 学習リストの生成とUI更新 ---
+    function refreshStudyList() {
+        const now = new Date();
+        todaysCards = allCards.filter(card => new Date(card.nextReviewDate) <= now);
+        currentIndex = 0;
+        updateUI();
+    }
+
+    function updateUI() {
+        if (todaysCards.length === 0 || currentIndex >= todaysCards.length) {
+            document.getElementById('flashcard').style.display = 'none';
+            document.getElementById('progress').style.display = 'none';
+            document.getElementById('completion-msg').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('flashcard').style.display = 'flex';
+        document.getElementById('completion-msg').style.display = 'none';
+        document.getElementById('progress').style.display = 'block';
+
+        const card = todaysCards[currentIndex];
+        document.getElementById('progress').innerText = `今日の学習: 残り ${todaysCards.length - currentIndex} 単語`;
+        
+        document.getElementById('word-text').innerText = card.word;
+        const regex = new RegExp(`(${card.word})`, 'gi');
+        document.getElementById('hint-text').innerText = card.example.replace(regex, '______');
+        
+        document.getElementById('pos-text').innerText = card.pos || 'N/A';
+        document.getElementById('cefr-text').innerText = card.cefr || 'N/A';
+        document.getElementById('meaning-text').innerText = card.meaning;
+        document.getElementById('example-text').innerText = card.example;
+
+        document.getElementById('front-content').style.display = 'block';
+        document.getElementById('back-content').style.display = 'none';
+    }
+
+    function showAnswer() {
+        document.getElementById('front-content').style.display = 'none';
+        document.getElementById('back-content').style.display = 'block';
+        playAudio();
+    }
+
+    function rateCard(q) {
+        let card = todaysCards[currentIndex];
+
+        if (q === 1) {
+            card.repetition = 0;
+            card.interval = 1;
+        } else {
+            card.repetition += 1;
+            if (card.repetition === 1) {
+                card.interval = 1;
+            } else if (card.repetition === 2) {
+                card.interval = 6;
+            } else {
+                card.interval = Math.round(card.interval * card.efactor);
+            }
+            card.efactor = card.efactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+            if (card.efactor < 1.3) card.efactor = 1.3;
+        }
+
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + card.interval);
+        card.nextReviewDate = nextDate.toISOString();
+
+        const indexInAll = allCards.findIndex(c => c.id === card.id);
+        if (indexInAll !== -1) allCards[indexInAll] = card;
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(allCards));
+        currentIndex++;
+        updateUI();
+    }
+
+    function playAudio() {
+        const word = document.getElementById('word-text').innerText;
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US';
+        window.speechSynthesis.speak(utterance);
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (!document.getElementById('study-section').classList.contains('active')) return;
+
+        const isFrontVisible = document.getElementById('front-content').style.display !== 'none';
+        if (event.code === 'Space' && isFrontVisible) {
+            showAnswer();
+            event.preventDefault();
+        } else if (!isFrontVisible) {
+            if (event.key === '1') rateCard(1);
+            if (event.key === '2') rateCard(2);
+            if (event.key === '3') rateCard(3);
+            if (event.key === '4') rateCard(4);
+        }
+    });
+
+    refreshStudyList();
+</script>
+
+</body>
+</html>
