@@ -1,9 +1,10 @@
+````html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memoria - AI Vocabulary Learning</title>
+  <title>Memoria Lite - Vocabulary Learning</title>
   <style>
     :root {
       --primary: #4F46E5;
@@ -352,7 +353,7 @@
   <div class="container">
 
     <div id="tab-dashboard" class="tab-content active">
-      <h2 style="text-align: center;">Memoria</h2>
+      <h2 style="text-align: center;">Memoria Lite</h2>
 
       <div class="stats-grid">
         <div class="stat-card">
@@ -389,7 +390,9 @@
             <span id="btn-count-weak" class="mode-count">0件</span>
           </button>
         </div>
-        <p class="small-note" style="margin-bottom: 0;">学習画面では Space で答え表示、1〜4 で評価できます。</p>
+        <p class="small-note" style="margin-bottom: 0;">
+          学習画面では Space で答え表示、1〜4 で評価できます。「忘れた」を押した単語は、このセッションの最後にもう一度出ます。
+        </p>
       </div>
     </div>
 
@@ -464,7 +467,10 @@
     <div id="tab-import" class="tab-content">
       <h2>AIから単語をインポート</h2>
       <div class="panel">
-        <p class="small-note">AIに出力させたJSON配列を貼り付けてください。コードフェンス付きの出力も、できる範囲で自動抽出します。</p>
+        <p class="small-note">
+          AIに出力させたJSON配列を貼り付けてください。コードフェンス付きの出力も、できる範囲で自動抽出します。
+          同じ単語でも、品詞や意味が違う場合は別カードとして登録できます。
+        </p>
         <textarea id="import-textarea" placeholder='[
   {
     "word": "take off",
@@ -506,6 +512,24 @@
     "importance": 4,
     "example": "He was taking his jacket off because it was hot.",
     "example_masked": "He was ______ his jacket ______ because it was hot."
+  },
+  {
+    "word": "record",
+    "meaning": "記録",
+    "pos": "noun",
+    "cefr": "A2",
+    "importance": 4,
+    "example": "The scientist checked the record carefully.",
+    "example_masked": "The scientist checked the ______ carefully."
+  },
+  {
+    "word": "record",
+    "meaning": "記録する",
+    "pos": "verb",
+    "cefr": "B1",
+    "importance": 4,
+    "example": "The students recorded their observations.",
+    "example_masked": "The students ______ their observations."
   }
 ]</pre>
       </div>
@@ -607,9 +631,22 @@
       }
     }
 
+    // 修正1: 保存失敗対策を追加
     function saveCards(cards) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+      } catch (error) {
+        console.error('保存に失敗しました:', error);
+        alert(
+          '⚠️ データの保存に失敗しました。\n' +
+          'ブラウザの保存容量が上限に達している可能性があります。\n\n' +
+          '「単語管理」からエクスポートでバックアップを取り、不要な単語を削除してください。'
+        );
+        return false;
+      }
+
       updateDashboard();
+      return true;
     }
 
     function normalizeCard(card) {
@@ -643,11 +680,21 @@
         .map(normalizeCard)
         .filter(card => card.word && card.meaning);
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      } catch (error) {
+        console.error('移行データの保存に失敗しました:', error);
+        alert('既存データの移行保存に失敗しました。バックアップを確認してください。');
+      }
     }
 
+    // 修正4: 重複判定を word だけでなく word + pos + meaning に変更
     function makeDuplicateKey(card) {
-      return String(card.word || '').trim().toLowerCase();
+      return [
+        String(card.word || '').trim().toLowerCase(),
+        String(card.pos || '').trim().toLowerCase(),
+        String(card.meaning || '').trim().toLowerCase()
+      ].join('::');
     }
 
     // ==========================================
@@ -658,6 +705,11 @@
       populateCefrFilter();
       renderVocabList();
       updateDashboard();
+
+      // 修正2: 発音機能の初回無音対策。ただし対応ブラウザのみ実行
+      if ('speechSynthesis' in window) {
+        speechSynthesis.getVoices();
+      }
     };
 
     function switchTab(tabId) {
@@ -695,7 +747,7 @@
     }
 
     function getStats() {
-      const cards = getCards();
+      const cards = getCards().map(normalizeCard);
       const now = new Date().getTime();
       return {
         total: cards.length,
@@ -730,12 +782,18 @@
             .filter(card => isReviewDue(card, now))
             .sort((a, b) => getReviewTime(a) - getReviewTime(b));
           break;
+
         case 'new':
           learningQueue = allCards
             .filter(isNewCard)
-            .sort((a, b) => a.createdAt - b.createdAt)
+            // 修正5: 新規学習は登録順ではなく重要度優先。同じ重要度なら古いものから。
+            .sort((a, b) => {
+              if (b.importance !== a.importance) return b.importance - a.importance;
+              return a.createdAt - b.createdAt;
+            })
             .slice(0, 10);
           break;
+
         case 'weak':
           learningQueue = allCards
             .filter(isWeakCard)
@@ -763,7 +821,12 @@
         learningQueue = [];
         currentIndex = 0;
         currentCard = null;
-        speechSynthesis.cancel();
+
+        // 修正2: speechSynthesis 対応ブラウザのみ停止処理
+        if ('speechSynthesis' in window) {
+          speechSynthesis.cancel();
+        }
+
         switchTab('tab-dashboard');
       }
     }
@@ -808,8 +871,15 @@
       document.getElementById('card-example').textContent = currentCard.example || '例文は登録されていません。';
     }
 
+    // 修正2: 発音機能にブラウザ対応チェックを追加
     function speakWord() {
       if (!currentCard) return;
+
+      if (!('speechSynthesis' in window)) {
+        alert('このブラウザでは音声読み上げに対応していません。');
+        return;
+      }
+
       speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(currentCard.word);
       utterance.lang = 'en-US';
@@ -833,6 +903,7 @@
           currentCard.lapses = (currentCard.lapses || 0) + 1;
           currentCard.efactor = Math.max(1.3, currentCard.efactor - 0.2);
           currentCard.interval = 0;
+          // 修正3: 次回以降の復習目安は10分後。セッション中は下でキュー末尾に戻す。
           currentCard.nextReviewDate = now + (10 * 60 * 1000);
           break;
 
@@ -869,9 +940,12 @@
       const cardIndex = allCards.findIndex(card => card.id === currentCard.id);
       if (cardIndex !== -1) {
         allCards[cardIndex] = currentCard;
-        saveCards(allCards);
+
+        // 修正1: 保存失敗時は次へ進まない
+        if (!saveCards(allCards)) return;
       }
 
+      // 修正3: 「忘れた」はこのセッションの最後にもう一度出す
       if (evaluation === 'forgot') {
         learningQueue.push({ ...currentCard });
       }
@@ -957,7 +1031,7 @@
       try {
         const newCards = parseImportJson(jsonString);
         const existingCards = getCards().map(normalizeCard);
-        const existingWords = existingCards.map(makeDuplicateKey);
+        const existingKeys = existingCards.map(makeDuplicateKey);
 
         let addedCount = 0;
         const skippedWords = [];
@@ -970,10 +1044,17 @@
           }
 
           const normalizedWord = item.word.trim();
-          const wordKey = normalizedWord.toLowerCase();
+          const normalizedMeaning = item.meaning.trim();
 
-          if (existingWords.includes(wordKey)) {
-            skippedWords.push(normalizedWord);
+          // 修正4: word + pos + meaning で重複判定
+          const duplicateKey = makeDuplicateKey({
+            word: normalizedWord,
+            pos: item.pos,
+            meaning: normalizedMeaning
+          });
+
+          if (existingKeys.includes(duplicateKey)) {
+            skippedWords.push(`${normalizedWord}（${normalizedMeaning}）`);
             return;
           }
 
@@ -981,7 +1062,7 @@
           const card = normalizeCard({
             id: generateId(),
             word: normalizedWord,
-            meaning: item.meaning.trim(),
+            meaning: normalizedMeaning,
             pos: item.pos,
             cefr: item.cefr,
             importance: item.importance,
@@ -997,11 +1078,13 @@
           });
 
           existingCards.push(card);
-          existingWords.push(wordKey);
+          existingKeys.push(duplicateKey);
           addedCount++;
         });
 
-        saveCards(existingCards);
+        // 修正1: 保存失敗時は結果表示・入力欄クリアを行わない
+        if (!saveCards(existingCards)) return;
+
         populateCefrFilter();
         renderVocabList();
         showImportResult(addedCount, skippedWords, invalidItems);
@@ -1153,7 +1236,10 @@
     function deleteCard(id) {
       if (!confirm('本当に削除しますか？')) return;
       const cards = getCards().map(normalizeCard).filter(card => card.id !== id);
-      saveCards(cards);
+
+      // 修正1: 保存失敗時は表示更新しない
+      if (!saveCards(cards)) return;
+
       populateCefrFilter();
       renderVocabList();
     }
@@ -1171,7 +1257,7 @@
       return `${y}${m}${d}_${hh}${mm}`;
     }
 
-    function exportData(prefix = 'memoria_backup') {
+    function exportData(prefix = 'memoria_lite_backup') {
       const cards = getCards().map(normalizeCard).filter(card => card.word && card.meaning);
       const data = JSON.stringify(cards, null, 2);
       const blob = new Blob([data], { type: 'application/json' });
@@ -1221,7 +1307,7 @@
 
       if (getCards().length > 0) {
         const backupFirst = confirm('復元前に、現在のデータをバックアップとして保存しますか？');
-        if (backupFirst) exportData('memoria_before_restore');
+        if (backupFirst) exportData('memoria_lite_before_restore');
       }
 
       const reader = new FileReader();
@@ -1231,7 +1317,10 @@
           validateBackupArray(importedData);
 
           const normalizedData = importedData.map(normalizeCard).filter(card => card.word && card.meaning);
-          saveCards(normalizedData);
+
+          // 修正1: 保存失敗時は完了扱いにしない
+          if (!saveCards(normalizedData)) return;
+
           populateCefrFilter();
           renderVocabList();
           alert('データの復元が完了しました。');
@@ -1246,3 +1335,4 @@
   </script>
 </body>
 </html>
+````
