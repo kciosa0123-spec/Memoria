@@ -1,4 +1,3 @@
-````html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -20,11 +19,11 @@
       --border: #E5E7EB;
       --info-bg: #E0F2FE;
       --info-border: #BAE6FD;
+      --warn-bg: #FEF3C7;
+      --warn-border: #FDE68A;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -63,9 +62,7 @@
     }
 
     nav button:hover,
-    nav button.active-nav {
-      background-color: var(--primary-hover);
-    }
+    nav button.active-nav { background-color: var(--primary-hover); }
 
     .container {
       width: 92%;
@@ -74,13 +71,8 @@
       margin-bottom: 60px;
     }
 
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     .panel {
       background-color: var(--card-bg);
@@ -300,9 +292,73 @@
       margin-top: 6px;
     }
 
+    .word-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .word-actions .btn {
+      padding: 6px 10px;
+      white-space: nowrap;
+    }
+
+    .edit-form {
+      width: 100%;
+    }
+
+    .edit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .edit-grid label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .edit-grid label.full { grid-column: 1 / -1; }
+
+    .edit-grid textarea {
+      height: 72px;
+      margin-bottom: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    .edit-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .edit-actions .btn { flex: 1; }
+
     .small-note {
       font-size: 13px;
       color: var(--text-muted);
+    }
+
+    .storage-note {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(14,165,233,0.25);
+      margin: 10px 0;
+    }
+
+    .storage-note.warning {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+      color: #92400E;
+      font-weight: 700;
     }
 
     .result-box {
@@ -338,7 +394,9 @@
       .eval-buttons { flex-direction: column; }
       .btn-eval { width: 100%; }
       li.word-item { flex-direction: column; }
-      li.word-item .btn { width: 100%; }
+      .word-actions { width: 100%; flex-direction: row; }
+      .word-actions .btn { flex: 1; }
+      .edit-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -440,7 +498,8 @@
 
       <div class="panel info-panel">
         <h3 style="margin-top: 0;">💾 バックアップと復元</h3>
-        <p class="small-note">PC移行やデータ消失に備えて定期的に保存してください。</p>
+        <p class="small-note">PC移行やデータ消失に備えて定期的に保存してください。Lite版は軽量運用向けのため、1,000〜2,000語程度までの利用を推奨します。</p>
+        <p id="storage-usage" class="small-note storage-note">保存容量: 計算中...</p>
         <button onclick="exportData()" class="btn btn-primary" style="margin-bottom: 10px; width: 100%;">⬇️ 全データをエクスポート JSON</button>
         <input type="file" id="import-file" accept=".json,application/json" style="display: none;" onchange="importBackup(event)">
         <button onclick="document.getElementById('import-file').click()" class="btn btn-danger" style="width: 100%;">⬆️ バックアップから復元 完全上書き</button>
@@ -473,13 +532,13 @@
         </p>
         <textarea id="import-textarea" placeholder='[
   {
-    "word": "take off",
-    "meaning": "（服などを）脱ぐ",
+    "word": "mitigate",
+    "meaning": "緩和する、和らげる",
     "pos": "verb",
-    "cefr": "A2",
-    "importance": 4,
-    "example": "He was taking his jacket off.",
-    "example_masked": "He was ______ his jacket ______."
+    "cefr": "C1",
+    "importance": 5,
+    "example": "The new policy was designed to mitigate the adverse effects of climate change.",
+    "example_masked": "The new policy was designed to ______ the adverse effects of climate change."
   }
 ]'></textarea>
         <button onclick="handleImport()" class="btn btn-secondary" style="width: 100%; padding: 15px;">インポートを実行</button>
@@ -505,31 +564,40 @@
     "example_masked": "The discovery caused a ______ shift in modern physics."
   },
   {
-    "word": "take off",
-    "meaning": "（服などを）脱ぐ",
-    "pos": "verb",
-    "cefr": "A2",
-    "importance": 4,
-    "example": "He was taking his jacket off because it was hot.",
-    "example_masked": "He was ______ his jacket ______ because it was hot."
+    "word": "ubiquitous",
+    "meaning": "至るところに存在する、遍在する",
+    "pos": "adjective",
+    "cefr": "C1",
+    "importance": 5,
+    "example": "Smartphones have become ubiquitous in contemporary society.",
+    "example_masked": "Smartphones have become ______ in contemporary society."
   },
   {
-    "word": "record",
-    "meaning": "記録",
+    "word": "mitigate",
+    "meaning": "緩和する、和らげる",
+    "pos": "verb",
+    "cefr": "C1",
+    "importance": 5,
+    "example": "The new policy was designed to mitigate the adverse effects of climate change.",
+    "example_masked": "The new policy was designed to ______ the adverse effects of climate change."
+  },
+  {
+    "word": "corroborate",
+    "meaning": "裏付ける、確証する",
+    "pos": "verb",
+    "cefr": "C2",
+    "importance": 4,
+    "example": "The experimental results corroborate the hypothesis proposed in the earlier study.",
+    "example_masked": "The experimental results ______ the hypothesis proposed in the earlier study."
+  },
+  {
+    "word": "discrepancy",
+    "meaning": "不一致、食い違い",
     "pos": "noun",
-    "cefr": "A2",
+    "cefr": "C1",
     "importance": 4,
-    "example": "The scientist checked the record carefully.",
-    "example_masked": "The scientist checked the ______ carefully."
-  },
-  {
-    "word": "record",
-    "meaning": "記録する",
-    "pos": "verb",
-    "cefr": "B1",
-    "importance": 4,
-    "example": "The students recorded their observations.",
-    "example_masked": "The students ______ their observations."
+    "example": "The researcher noticed a discrepancy between the survey data and the interview responses.",
+    "example_masked": "The researcher noticed a ______ between the survey data and the interview responses."
   }
 ]</pre>
       </div>
@@ -542,9 +610,13 @@
     // 基本設定
     // ==========================================
     const STORAGE_KEY = 'my_vocab_cards';
+    const STORAGE_WARNING_DATE_KEY = 'my_vocab_storage_warning_date';
+    const LOCAL_STORAGE_LIMIT_BYTES = 5 * 1024 * 1024; // localStorage の一般的な目安: 約5MB
+
     let learningQueue = [];
     let currentIndex = 0;
     let currentCard = null;
+    let editingCardId = null;
 
     // ==========================================
     // 汎用ユーティリティ
@@ -620,6 +692,17 @@
       return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    function todayStamp() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    // ==========================================
+    // データ読み書き・正規化
+    // ==========================================
     function getCards() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -631,8 +714,21 @@
       }
     }
 
-    // 修正1: 保存失敗対策を追加
-    function saveCards(cards) {
+    // 読み取り側では基本的に正規化しない。保存境界で正規化済みである前提。
+    function getValidCards() {
+      return getCards().filter(card =>
+        card &&
+        typeof card === 'object' &&
+        typeof card.word === 'string' &&
+        typeof card.meaning === 'string' &&
+        card.word.trim() !== '' &&
+        card.meaning.trim() !== ''
+      );
+    }
+
+    function saveCards(cards, options = {}) {
+      const { warnNearLimit = true } = options;
+
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
       } catch (error) {
@@ -646,6 +742,8 @@
       }
 
       updateDashboard();
+      updateStorageUsageDisplay();
+      if (warnNearLimit) warnIfStorageNearLimit();
       return true;
     }
 
@@ -672,14 +770,17 @@
       };
     }
 
+    function normalizeCardsForSave(cards) {
+      return cards
+        .map(normalizeCard)
+        .filter(card => card.word && card.meaning);
+    }
+
     function migrateExistingCards() {
       const cards = getCards();
       if (cards.length === 0) return;
 
-      const migrated = cards
-        .map(normalizeCard)
-        .filter(card => card.word && card.meaning);
-
+      const migrated = normalizeCardsForSave(cards);
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
       } catch (error) {
@@ -688,13 +789,52 @@
       }
     }
 
-    // 修正4: 重複判定を word だけでなく word + pos + meaning に変更
     function makeDuplicateKey(card) {
       return [
         String(card.word || '').trim().toLowerCase(),
         String(card.pos || '').trim().toLowerCase(),
         String(card.meaning || '').trim().toLowerCase()
       ].join('::');
+    }
+
+    // ==========================================
+    // 保存容量表示
+    // ==========================================
+    function getStorageUsageInfo() {
+      const raw = localStorage.getItem(STORAGE_KEY) || '';
+      const bytes = new Blob([raw]).size;
+      const percent = Math.round((bytes / LOCAL_STORAGE_LIMIT_BYTES) * 100);
+
+      return {
+        bytes,
+        kb: Math.round(bytes / 1024),
+        mb: Math.round((bytes / 1024 / 1024) * 100) / 100,
+        percent
+      };
+    }
+
+    function updateStorageUsageDisplay() {
+      const elem = document.getElementById('storage-usage');
+      if (!elem) return;
+
+      const info = getStorageUsageInfo();
+      elem.textContent = `保存容量: 約${info.mb}MB / 5MB目安（${info.percent}%）`;
+      elem.classList.toggle('warning', info.percent >= 80);
+    }
+
+    function warnIfStorageNearLimit() {
+      const info = getStorageUsageInfo();
+      if (info.percent < 80) return;
+
+      const today = todayStamp();
+      if (localStorage.getItem(STORAGE_WARNING_DATE_KEY) === today) return;
+      localStorage.setItem(STORAGE_WARNING_DATE_KEY, today);
+
+      alert(
+        `⚠️ 保存容量がかなり増えています。\n` +
+        `現在の使用量: 約${info.mb}MB（目安 ${info.percent}%）\n\n` +
+        `バックアップを取り、不要な単語を削除してください。数千語以上の長期運用では、Teacher/Pro版でのIndexedDB化を検討してください。`
+      );
     }
 
     // ==========================================
@@ -705,8 +845,8 @@
       populateCefrFilter();
       renderVocabList();
       updateDashboard();
+      updateStorageUsageDisplay();
 
-      // 修正2: 発音機能の初回無音対策。ただし対応ブラウザのみ実行
       if ('speechSynthesis' in window) {
         speechSynthesis.getVoices();
       }
@@ -725,6 +865,7 @@
       if (tabId === 'tab-list') {
         populateCefrFilter();
         renderVocabList();
+        updateStorageUsageDisplay();
       }
       if (tabId === 'tab-import') {
         document.getElementById('import-result').style.display = 'none';
@@ -747,7 +888,7 @@
     }
 
     function getStats() {
-      const cards = getCards().map(normalizeCard);
+      const cards = getValidCards();
       const now = new Date().getTime();
       return {
         total: cards.length,
@@ -773,7 +914,7 @@
     // 学習モード
     // ==========================================
     function startLearningMode(mode) {
-      const allCards = getCards().map(normalizeCard).filter(card => card.word && card.meaning);
+      const allCards = getValidCards();
       const now = new Date().getTime();
 
       switch (mode) {
@@ -786,10 +927,9 @@
         case 'new':
           learningQueue = allCards
             .filter(isNewCard)
-            // 修正5: 新規学習は登録順ではなく重要度優先。同じ重要度なら古いものから。
             .sort((a, b) => {
-              if (b.importance !== a.importance) return b.importance - a.importance;
-              return a.createdAt - b.createdAt;
+              if ((b.importance || 3) !== (a.importance || 3)) return (b.importance || 3) - (a.importance || 3);
+              return (a.createdAt || 0) - (b.createdAt || 0);
             })
             .slice(0, 10);
           break;
@@ -822,7 +962,6 @@
         currentIndex = 0;
         currentCard = null;
 
-        // 修正2: speechSynthesis 対応ブラウザのみ停止処理
         if ('speechSynthesis' in window) {
           speechSynthesis.cancel();
         }
@@ -835,7 +974,7 @@
       if (card.example_masked) return card.example_masked;
       if (!card.example) return '例文は登録されていません。';
       const safeWord = escapeRegExp(card.word);
-      const regex = new RegExp(`(${safeWord})`, 'gi');
+      const regex = new RegExp(`\\b(${safeWord})\\b`, 'gi');
       return card.example.replace(regex, '______');
     }
 
@@ -847,13 +986,13 @@
         return;
       }
 
-      currentCard = normalizeCard(learningQueue[currentIndex]);
+      currentCard = learningQueue[currentIndex];
 
       document.getElementById('learning-progress').textContent = `${currentIndex + 1} / ${learningQueue.length}`;
       document.getElementById('card-word').textContent = currentCard.word;
-      document.getElementById('card-pos').textContent = `品詞: ${currentCard.pos}`;
-      document.getElementById('card-cefr').textContent = `CEFR: ${currentCard.cefr}`;
-      document.getElementById('card-importance').textContent = `重要度: ${currentCard.importance}`;
+      document.getElementById('card-pos').textContent = `品詞: ${currentCard.pos || 'unknown'}`;
+      document.getElementById('card-cefr').textContent = `CEFR: ${currentCard.cefr || 'Unknown'}`;
+      document.getElementById('card-importance').textContent = `重要度: ${currentCard.importance || 3}`;
       document.getElementById('card-meaning').textContent = currentCard.meaning;
       document.getElementById('card-hint').textContent = createMaskedExample(currentCard);
       document.getElementById('card-example').textContent = '';
@@ -871,7 +1010,6 @@
       document.getElementById('card-example').textContent = currentCard.example || '例文は登録されていません。';
     }
 
-    // 修正2: 発音機能にブラウザ対応チェックを追加
     function speakWord() {
       if (!currentCard) return;
 
@@ -903,15 +1041,18 @@
           currentCard.lapses = (currentCard.lapses || 0) + 1;
           currentCard.efactor = Math.max(1.3, currentCard.efactor - 0.2);
           currentCard.interval = 0;
-          // 修正3: 次回以降の復習目安は10分後。セッション中は下でキュー末尾に戻す。
-          currentCard.nextReviewDate = now + (10 * 60 * 1000);
+          currentCard.nextReviewDate = now + (10 * 60 * 1000); // 次回以降の復習目安。セッション中は末尾でもう一度出す。
           break;
 
         case 'hard':
-          currentCard.status = 'learning';
+          // 「難しい」は失敗ではなく、短めに伸ばす扱いにする。
+          currentCard.status = 'review';
+          currentCard.repetition += 1;
           currentCard.efactor = Math.max(1.3, currentCard.efactor - 0.15);
-          currentCard.interval = 1;
-          currentCard.nextReviewDate = addDaysFromNow(1);
+          currentCard.interval = currentCard.repetition <= 1
+            ? 1
+            : Math.max(1, Math.round(currentCard.interval * 1.2));
+          currentCard.nextReviewDate = addDaysFromNow(currentCard.interval);
           break;
 
         case 'good':
@@ -936,16 +1077,13 @@
           break;
       }
 
-      const allCards = getCards().map(normalizeCard);
+      const allCards = getCards();
       const cardIndex = allCards.findIndex(card => card.id === currentCard.id);
       if (cardIndex !== -1) {
         allCards[cardIndex] = currentCard;
-
-        // 修正1: 保存失敗時は次へ進まない
         if (!saveCards(allCards)) return;
       }
 
-      // 修正3: 「忘れた」はこのセッションの最後にもう一度出す
       if (evaluation === 'forgot') {
         learningQueue.push({ ...currentCard });
       }
@@ -982,7 +1120,6 @@
     function extractJsonArrayText(input) {
       let text = String(input || '').trim();
 
-      // まず通常のJSONとして扱えるならそのまま返す
       try {
         JSON.parse(text);
         return text;
@@ -990,7 +1127,6 @@
         // 続けて補助抽出する
       }
 
-      // ```json ... ``` や ``` ... ``` を取り除く
       text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim();
 
       const start = text.indexOf('[');
@@ -1030,7 +1166,7 @@
 
       try {
         const newCards = parseImportJson(jsonString);
-        const existingCards = getCards().map(normalizeCard);
+        const existingCards = getCards();
         const existingKeys = existingCards.map(makeDuplicateKey);
 
         let addedCount = 0;
@@ -1043,26 +1179,11 @@
             return;
           }
 
-          const normalizedWord = item.word.trim();
-          const normalizedMeaning = item.meaning.trim();
-
-          // 修正4: word + pos + meaning で重複判定
-          const duplicateKey = makeDuplicateKey({
-            word: normalizedWord,
-            pos: item.pos,
-            meaning: normalizedMeaning
-          });
-
-          if (existingKeys.includes(duplicateKey)) {
-            skippedWords.push(`${normalizedWord}（${normalizedMeaning}）`);
-            return;
-          }
-
           const now = new Date().getTime();
           const card = normalizeCard({
             id: generateId(),
-            word: normalizedWord,
-            meaning: normalizedMeaning,
+            word: item.word,
+            meaning: item.meaning,
             pos: item.pos,
             cefr: item.cefr,
             importance: item.importance,
@@ -1077,12 +1198,18 @@
             createdAt: now
           });
 
+          const duplicateKey = makeDuplicateKey(card);
+
+          if (existingKeys.includes(duplicateKey)) {
+            skippedWords.push(`${card.word}（${card.meaning}）`);
+            return;
+          }
+
           existingCards.push(card);
           existingKeys.push(duplicateKey);
           addedCount++;
         });
 
-        // 修正1: 保存失敗時は結果表示・入力欄クリアを行わない
         if (!saveCards(existingCards)) return;
 
         populateCefrFilter();
@@ -1136,14 +1263,14 @@
     }
 
     // ==========================================
-    // 単語リスト・フィルター
+    // 単語リスト・フィルター・編集
     // ==========================================
     function populateCefrFilter() {
       const select = document.getElementById('cefr-filter');
       if (!select) return;
 
       const currentValue = select.value || 'all';
-      const cards = getCards().map(normalizeCard);
+      const cards = getValidCards();
       const values = Array.from(new Set(cards.map(card => card.cefr).filter(Boolean))).sort();
 
       select.textContent = '';
@@ -1163,7 +1290,7 @@
     }
 
     function renderVocabList() {
-      const cards = getCards().map(normalizeCard);
+      const cards = getValidCards();
       document.getElementById('total-words').textContent = cards.length;
 
       const searchTerm = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
@@ -1172,9 +1299,9 @@
 
       const filteredCards = cards.filter(card => {
         const matchesSearch = !searchTerm ||
-          card.word.toLowerCase().includes(searchTerm) ||
-          card.meaning.toLowerCase().includes(searchTerm) ||
-          card.example.toLowerCase().includes(searchTerm);
+          String(card.word || '').toLowerCase().includes(searchTerm) ||
+          String(card.meaning || '').toLowerCase().includes(searchTerm) ||
+          String(card.example || '').toLowerCase().includes(searchTerm);
 
         const matchesStatus = statusFilter === 'all' || card.status === statusFilter;
         const matchesCefr = cefrFilter === 'all' || card.cefr === cefrFilter;
@@ -1194,52 +1321,206 @@
       }
 
       filteredCards.forEach(card => {
-        const li = document.createElement('li');
-        li.className = 'word-item';
-
-        const textContainer = document.createElement('div');
-        textContainer.className = 'word-main';
-
-        const head = document.createElement('div');
-        head.className = 'word-head';
-        head.textContent = card.word;
-
-        const meaning = document.createElement('div');
-        meaning.className = 'word-meaning';
-        meaning.textContent = card.meaning;
-
-        const info1 = document.createElement('span');
-        info1.className = 'list-info';
-        info1.textContent = `品詞: ${card.pos} | CEFR: ${card.cefr} | 重要度: ${card.importance}`;
-
-        const info2 = document.createElement('span');
-        info2.className = 'list-info';
-        info2.textContent = `状態: ${card.status} | 連続正解: ${card.repetition}回 | 苦手回数: ${card.lapses} | 次回: ${formatDate(card.nextReviewDate)}`;
-
-        textContainer.appendChild(head);
-        textContainer.appendChild(meaning);
-        textContainer.appendChild(info1);
-        textContainer.appendChild(info2);
-
-        const delBtn = document.createElement('button');
-        delBtn.textContent = '削除';
-        delBtn.className = 'btn btn-danger';
-        delBtn.style.padding = '6px 10px';
-        delBtn.onclick = () => deleteCard(card.id);
-
-        li.appendChild(textContainer);
-        li.appendChild(delBtn);
-        listElement.appendChild(li);
+        if (editingCardId === card.id) {
+          listElement.appendChild(createEditListItem(card));
+        } else {
+          listElement.appendChild(createViewListItem(card));
+        }
       });
+    }
+
+    function createViewListItem(card) {
+      const li = document.createElement('li');
+      li.className = 'word-item';
+
+      const textContainer = document.createElement('div');
+      textContainer.className = 'word-main';
+
+      const head = document.createElement('div');
+      head.className = 'word-head';
+      head.textContent = card.word;
+
+      const meaning = document.createElement('div');
+      meaning.className = 'word-meaning';
+      meaning.textContent = card.meaning;
+
+      const info1 = document.createElement('span');
+      info1.className = 'list-info';
+      info1.textContent = `品詞: ${card.pos || 'unknown'} | CEFR: ${card.cefr || 'Unknown'} | 重要度: ${card.importance || 3}`;
+
+      const info2 = document.createElement('span');
+      info2.className = 'list-info';
+      info2.textContent = `状態: ${card.status || 'new'} | 連続正解: ${card.repetition || 0}回 | 苦手回数: ${card.lapses || 0} | 次回: ${formatDate(card.nextReviewDate)}`;
+
+      textContainer.appendChild(head);
+      textContainer.appendChild(meaning);
+      textContainer.appendChild(info1);
+      textContainer.appendChild(info2);
+
+      if (card.example) {
+        const ex = document.createElement('span');
+        ex.className = 'list-info';
+        ex.textContent = `例文: ${card.example}`;
+        textContainer.appendChild(ex);
+      }
+
+      const actions = document.createElement('div');
+      actions.className = 'word-actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '編集';
+      editBtn.className = 'btn btn-secondary';
+      editBtn.onclick = () => startEditCard(card.id);
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '削除';
+      delBtn.className = 'btn btn-danger';
+      delBtn.onclick = () => deleteCard(card.id);
+
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+
+      li.appendChild(textContainer);
+      li.appendChild(actions);
+      return li;
+    }
+
+    function createEditListItem(card) {
+      const li = document.createElement('li');
+      li.className = 'word-item';
+
+      const form = document.createElement('div');
+      form.className = 'edit-form';
+
+      const title = document.createElement('div');
+      title.className = 'word-head';
+      title.textContent = 'カードを編集';
+      form.appendChild(title);
+
+      const grid = document.createElement('div');
+      grid.className = 'edit-grid';
+
+      grid.appendChild(createLabeledInput(`edit-word-${card.id}`, '単語', card.word || ''));
+      grid.appendChild(createLabeledInput(`edit-meaning-${card.id}`, '意味', card.meaning || ''));
+      grid.appendChild(createLabeledInput(`edit-pos-${card.id}`, '品詞', card.pos || 'unknown'));
+      grid.appendChild(createLabeledInput(`edit-cefr-${card.id}`, 'CEFR', card.cefr || 'Unknown'));
+      grid.appendChild(createLabeledInput(`edit-importance-${card.id}`, '重要度 1〜5', card.importance || 3, 'number', '1', '5'));
+      grid.appendChild(createLabeledTextarea(`edit-example-${card.id}`, '例文', card.example || ''));
+      grid.appendChild(createLabeledTextarea(`edit-masked-${card.id}`, 'マスク例文', card.example_masked || ''));
+
+      form.appendChild(grid);
+
+      const note = document.createElement('p');
+      note.className = 'small-note';
+      note.textContent = '学習回数・EF・次回復習日は編集対象外です。必要な場合は削除して再登録してください。';
+      form.appendChild(note);
+
+      const actions = document.createElement('div');
+      actions.className = 'edit-actions';
+
+      const saveBtn = document.createElement('button');
+      saveBtn.textContent = '保存';
+      saveBtn.className = 'btn btn-primary';
+      saveBtn.onclick = () => saveEditCard(card.id);
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'キャンセル';
+      cancelBtn.className = 'btn btn-muted';
+      cancelBtn.onclick = cancelEditCard;
+
+      actions.appendChild(saveBtn);
+      actions.appendChild(cancelBtn);
+      form.appendChild(actions);
+
+      li.appendChild(form);
+      return li;
+    }
+
+    function createLabeledInput(id, labelText, value, type = 'text', min = null, max = null) {
+      const label = document.createElement('label');
+      label.textContent = labelText;
+
+      const input = document.createElement('input');
+      input.id = id;
+      input.type = type;
+      input.value = value;
+      if (min !== null) input.min = min;
+      if (max !== null) input.max = max;
+
+      label.appendChild(input);
+      return label;
+    }
+
+    function createLabeledTextarea(id, labelText, value) {
+      const label = document.createElement('label');
+      label.className = 'full';
+      label.textContent = labelText;
+
+      const textarea = document.createElement('textarea');
+      textarea.id = id;
+      textarea.value = value;
+
+      label.appendChild(textarea);
+      return label;
+    }
+
+    function startEditCard(id) {
+      editingCardId = id;
+      renderVocabList();
+    }
+
+    function cancelEditCard() {
+      editingCardId = null;
+      renderVocabList();
+    }
+
+    function saveEditCard(id) {
+      const cards = getCards();
+      const index = cards.findIndex(card => card.id === id);
+      if (index === -1) {
+        alert('編集対象のカードが見つかりません。');
+        editingCardId = null;
+        renderVocabList();
+        return;
+      }
+
+      const original = cards[index];
+      const updated = normalizeCard({
+        ...original,
+        word: document.getElementById(`edit-word-${id}`).value,
+        meaning: document.getElementById(`edit-meaning-${id}`).value,
+        pos: document.getElementById(`edit-pos-${id}`).value,
+        cefr: document.getElementById(`edit-cefr-${id}`).value,
+        importance: document.getElementById(`edit-importance-${id}`).value,
+        example: document.getElementById(`edit-example-${id}`).value,
+        example_masked: document.getElementById(`edit-masked-${id}`).value
+      });
+
+      if (!updated.word || !updated.meaning) {
+        alert('単語と意味は必須です。');
+        return;
+      }
+
+      const updatedKey = makeDuplicateKey(updated);
+      const duplicate = cards.some(card => card.id !== id && makeDuplicateKey(card) === updatedKey);
+      if (duplicate) {
+        alert('同じ単語・品詞・意味のカードがすでにあります。');
+        return;
+      }
+
+      cards[index] = updated;
+      if (!saveCards(cards)) return;
+
+      editingCardId = null;
+      populateCefrFilter();
+      renderVocabList();
     }
 
     function deleteCard(id) {
       if (!confirm('本当に削除しますか？')) return;
-      const cards = getCards().map(normalizeCard).filter(card => card.id !== id);
-
-      // 修正1: 保存失敗時は表示更新しない
+      const cards = getCards().filter(card => card.id !== id);
       if (!saveCards(cards)) return;
-
+      if (editingCardId === id) editingCardId = null;
       populateCefrFilter();
       renderVocabList();
     }
@@ -1258,7 +1539,7 @@
     }
 
     function exportData(prefix = 'memoria_lite_backup') {
-      const cards = getCards().map(normalizeCard).filter(card => card.word && card.meaning);
+      const cards = getValidCards();
       const data = JSON.stringify(cards, null, 2);
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -1316,11 +1597,10 @@
           const importedData = JSON.parse(e.target.result);
           validateBackupArray(importedData);
 
-          const normalizedData = importedData.map(normalizeCard).filter(card => card.word && card.meaning);
-
-          // 修正1: 保存失敗時は完了扱いにしない
+          const normalizedData = normalizeCardsForSave(importedData);
           if (!saveCards(normalizedData)) return;
 
+          editingCardId = null;
           populateCefrFilter();
           renderVocabList();
           alert('データの復元が完了しました。');
@@ -1335,4 +1615,3 @@
   </script>
 </body>
 </html>
-````
