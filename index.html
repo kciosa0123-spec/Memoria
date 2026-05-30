@@ -611,12 +611,18 @@
     // ==========================================
     const STORAGE_KEY = 'my_vocab_cards';
     const STORAGE_WARNING_DATE_KEY = 'my_vocab_storage_warning_date';
+    const STORAGE_SCHEMA_VERSION_KEY = 'my_vocab_schema_version';
+    const CURRENT_SCHEMA_VERSION = '2';
     const LOCAL_STORAGE_LIMIT_BYTES = 5 * 1024 * 1024; // localStorage の一般的な目安: 約5MB
+    const MAX_IMPORT_DETAIL_ITEMS = 30;
+    const MAX_EFACTOR = 3.0;
 
     let learningQueue = [];
     let currentIndex = 0;
     let currentCard = null;
     let editingCardId = null;
+    let sessionInitialCount = 0;
+    let sessionRequeuedCount = 0;
 
     // ==========================================
     // 汎用ユーティリティ
@@ -727,10 +733,16 @@
     }
 
     function saveCards(cards, options = {}) {
-      const { warnNearLimit = true } = options;
+      const {
+        warnNearLimit = true,
+        normalizeBeforeSave = true
+      } = options;
+
+      const cardsToSave = normalizeBeforeSave ? normalizeCardsForSave(cards) : cards;
+      const jsonText = JSON.stringify(cardsToSave);
 
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+        localStorage.setItem(STORAGE_KEY, jsonText);
       } catch (error) {
         console.error('保存に失敗しました:', error);
         alert(
@@ -741,9 +753,11 @@
         return false;
       }
 
+      const storageInfo = getStorageUsageInfoFromText(jsonText);
+
       updateDashboard();
-      updateStorageUsageDisplay();
-      if (warnNearLimit) warnIfStorageNearLimit();
+      updateStorageUsageDisplay(storageInfo);
+      if (warnNearLimit) warnIfStorageNearLimit(storageInfo);
       return true;
     }
 
@@ -770,39 +784,80 @@
       };
     }
 
-    function normalizeCardsForSave(cards) {
-      return cards
-        .map(normalizeCard)
-        .filter(card => card.word && card.meaning);
+    function normalizeCardsForSave(cards, options = {}) {
+      const { warnDropped = false, context = 'normalizeCardsForSave' } = options;
+      const sourceCards = Array.isArray(cards) ? cards : [];
+      const normalized = sourceCards.map(normalizeCard);
+      const valid = normalized.filter(card => card.word && card.meaning);
+
+      if (warnDropped && valid.length !== normalized.length) {
+        console.warn(
+          `[Memoria Lite] ${context}: ${normalized.length - valid.length}件の形式不正カードを除外しました。`,
+          { before: normalized.length, after: valid.length }
+        );
+      }
+
+      return valid;
     }
 
     function migrateExistingCards() {
-      const cards = getCards();
-      if (cards.length === 0) return;
+      const currentVersion = localStorage.getItem(STORAGE_SCHEMA_VERSION_KEY);
+      if (currentVersion === CURRENT_SCHEMA_VERSION) return;
 
-      const migrated = normalizeCardsForSave(cards);
+      const cards = getCards();
+
+      if (cards.length === 0) {
+        try {
+          localStorage.setItem(STORAGE_SCHEMA_VERSION_KEY, CURRENT_SCHEMA_VERSION);
+        } catch (error) {
+          console.warn('[Memoria Lite] スキーマバージョンの記録に失敗しました。', error);
+        }
+        return;
+      }
+
+      const migrated = normalizeCardsForSave(cards, {
+        warnDropped: true,
+        context: 'migration'
+      });
+      const jsonText = JSON.stringify(migrated);
+
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+        localStorage.setItem(STORAGE_KEY, jsonText);
+        localStorage.setItem(STORAGE_SCHEMA_VERSION_KEY, CURRENT_SCHEMA_VERSION);
+        console.info(`[Memoria Lite] データ移行が完了しました。schema=${CURRENT_SCHEMA_VERSION}`);
       } catch (error) {
         console.error('移行データの保存に失敗しました:', error);
         alert('既存データの移行保存に失敗しました。バックアップを確認してください。');
       }
     }
 
+    function normalizeKeyText(value) {
+      return String(value || '')
+        .normalize('NFKC')
+        .trim()
+        .replace(/\s+/g, ' ')
+        .toLowerCase();
+    }
+
     function makeDuplicateKey(card) {
       return [
-        String(card.word || '').trim().toLowerCase(),
-        String(card.pos || '').trim().toLowerCase(),
-        String(card.meaning || '').trim().toLowerCase()
+        normalizeKeyText(card.word),
+        normalizeKeyText(card.pos),
+        normalizeKeyText(card.meaning)
       ].join('::');
     }
 
     // ==========================================
     // 保存容量表示
     // ==========================================
-    function getStorageUsageInfo() {
-      const raw = localStorage.getItem(STORAGE_KEY) || '';
-      const bytes = new Blob([raw]).size;
+    function getByteSize(text) {
+      const raw = String(text || '');
+      if ('TextEncoder' in window) return new TextEncoder().encode(raw).length;
+      return new Blob([raw]).size;
+    }
+
+    function getStorageUsageInfoFromText(text) {
+      const bytes = getByteSize(text);
       const percent = Math.round((bytes / LOCAL_STORAGE_LIMIT_BYTES) * 100);
 
       return {
@@ -813,26 +868,36 @@
       };
     }
 
-    function updateStorageUsageDisplay() {
+    function getStorageUsageInfo() {
+      const raw = localStorage.getItem(STORAGE_KEY) || '';
+      return getStorageUsageInfoFromText(raw);
+    }
+
+    function updateStorageUsageDisplay(info = null) {
       const elem = document.getElementById('storage-usage');
       if (!elem) return;
 
-      const info = getStorageUsageInfo();
-      elem.textContent = `保存容量: 約${info.mb}MB / 5MB目安（${info.percent}%）`;
-      elem.classList.toggle('warning', info.percent >= 80);
+      const usageInfo = info || getStorageUsageInfo();
+      elem.textContent = `保存容量: 約${usageInfo.mb}MB / 5MB目安（${usageInfo.percent}%）`;
+      elem.classList.toggle('warning', usageInfo.percent >= 80);
     }
 
-    function warnIfStorageNearLimit() {
-      const info = getStorageUsageInfo();
-      if (info.percent < 80) return;
+    function warnIfStorageNearLimit(info = null) {
+      const usageInfo = info || getStorageUsageInfo();
+      if (usageInfo.percent < 80) return;
 
       const today = todayStamp();
-      if (localStorage.getItem(STORAGE_WARNING_DATE_KEY) === today) return;
-      localStorage.setItem(STORAGE_WARNING_DATE_KEY, today);
+
+      try {
+        if (localStorage.getItem(STORAGE_WARNING_DATE_KEY) === today) return;
+        localStorage.setItem(STORAGE_WARNING_DATE_KEY, today);
+      } catch (error) {
+        console.warn('[Memoria Lite] 保存容量警告日の記録に失敗しました。', error);
+      }
 
       alert(
         `⚠️ 保存容量がかなり増えています。\n` +
-        `現在の使用量: 約${info.mb}MB（目安 ${info.percent}%）\n\n` +
+        `現在の使用量: 約${usageInfo.mb}MB（目安 ${usageInfo.percent}%）\n\n` +
         `バックアップを取り、不要な単語を削除してください。数千語以上の長期運用では、Teacher/Pro版でのIndexedDB化を検討してください。`
       );
     }
@@ -952,6 +1017,8 @@
       }
 
       currentIndex = 0;
+      sessionInitialCount = learningQueue.length;
+      sessionRequeuedCount = 0;
       switchTab('tab-learning');
       showNextCard();
     }
@@ -961,6 +1028,8 @@
         learningQueue = [];
         currentIndex = 0;
         currentCard = null;
+        sessionInitialCount = 0;
+        sessionRequeuedCount = 0;
 
         if ('speechSynthesis' in window) {
           speechSynthesis.cancel();
@@ -973,22 +1042,47 @@
     function createMaskedExample(card) {
       if (card.example_masked) return card.example_masked;
       if (!card.example) return '例文は登録されていません。';
-      const safeWord = escapeRegExp(card.word);
-      const regex = new RegExp(`\\b(${safeWord})\\b`, 'gi');
+
+      const word = String(card.word || '').trim();
+      if (!word) return card.example;
+
+      const safeWord = escapeRegExp(word);
+
+      // 単純な英単語なら語境界を使う。複合語・ハイフン語・句はそのまま置換する。
+      if (/^[A-Za-z]+$/.test(word)) {
+        const regex = new RegExp(`\b${safeWord}\b`, 'gi');
+        return card.example.replace(regex, '______');
+      }
+
+      const regex = new RegExp(safeWord, 'gi');
       return card.example.replace(regex, '______');
+    }
+
+    function updateLearningProgressText() {
+      const remaining = Math.max(0, learningQueue.length - currentIndex);
+      const progressElem = document.getElementById('learning-progress');
+      if (!progressElem) return;
+
+      if (sessionRequeuedCount > 0) {
+        progressElem.textContent = `残り ${remaining}枚（初期${sessionInitialCount}・再出題 +${sessionRequeuedCount}）`;
+      } else {
+        progressElem.textContent = `残り ${remaining}枚（全${sessionInitialCount}枚）`;
+      }
     }
 
     function showNextCard() {
       if (currentIndex >= learningQueue.length) {
         alert('このセッションの学習が完了しました！お疲れ様でした。');
         currentCard = null;
+        sessionInitialCount = 0;
+        sessionRequeuedCount = 0;
         switchTab('tab-dashboard');
         return;
       }
 
       currentCard = learningQueue[currentIndex];
 
-      document.getElementById('learning-progress').textContent = `${currentIndex + 1} / ${learningQueue.length}`;
+      updateLearningProgressText();
       document.getElementById('card-word').textContent = currentCard.word;
       document.getElementById('card-pos').textContent = `品詞: ${currentCard.pos || 'unknown'}`;
       document.getElementById('card-cefr').textContent = `CEFR: ${currentCard.cefr || 'Unknown'}`;
@@ -1069,7 +1163,7 @@
           currentCard.status = 'review';
           currentCard.lapses = Math.max(0, (currentCard.lapses || 0) - 2);
           currentCard.repetition += 1;
-          currentCard.efactor += 0.15;
+          currentCard.efactor = Math.min(MAX_EFACTOR, currentCard.efactor + 0.15);
           if (currentCard.repetition === 1) currentCard.interval = 2;
           else if (currentCard.repetition === 2) currentCard.interval = 8;
           else currentCard.interval = Math.max(1, Math.round(currentCard.interval * currentCard.efactor * 1.3));
@@ -1086,6 +1180,7 @@
 
       if (evaluation === 'forgot') {
         learningQueue.push({ ...currentCard });
+        sessionRequeuedCount++;
       }
 
       currentIndex++;
@@ -1166,8 +1261,8 @@
 
       try {
         const newCards = parseImportJson(jsonString);
-        const existingCards = getCards();
-        const existingKeys = existingCards.map(makeDuplicateKey);
+        const existingCards = normalizeCardsForSave(getCards());
+        const existingKeys = new Set(existingCards.map(makeDuplicateKey));
 
         let addedCount = 0;
         const skippedWords = [];
@@ -1200,13 +1295,13 @@
 
           const duplicateKey = makeDuplicateKey(card);
 
-          if (existingKeys.includes(duplicateKey)) {
+          if (existingKeys.has(duplicateKey)) {
             skippedWords.push(`${card.word}（${card.meaning}）`);
             return;
           }
 
           existingCards.push(card);
-          existingKeys.push(duplicateKey);
+          existingKeys.add(duplicateKey);
           addedCount++;
         });
 
@@ -1219,6 +1314,11 @@
       } catch (error) {
         alert(`エラー: JSONの読み込みに失敗しました。\n${error.message}\nフォーマットを確認してください。`);
       }
+    }
+
+    function summarizeList(items, limit = MAX_IMPORT_DETAIL_ITEMS) {
+      if (items.length <= limit) return items.join(', ');
+      return items.slice(0, limit).join(', ') + ` ほか${items.length - limit}件`;
     }
 
     function showImportResult(addedCount, skippedWords, invalidItems) {
@@ -1239,7 +1339,7 @@
         const strong = document.createElement('strong');
         strong.textContent = '重複スキップ: ';
         p.appendChild(strong);
-        p.appendChild(document.createTextNode(skippedWords.join(', ')));
+        p.appendChild(document.createTextNode(summarizeList(skippedWords)));
         detailsElem.appendChild(p);
       }
 
@@ -1248,7 +1348,7 @@
         const strong = document.createElement('strong');
         strong.textContent = '形式不備スキップ: ';
         p.appendChild(strong);
-        p.appendChild(document.createTextNode(invalidItems.join(', ')));
+        p.appendChild(document.createTextNode(summarizeList(invalidItems)));
         detailsElem.appendChild(p);
       }
     }
