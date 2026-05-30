@@ -48,6 +48,7 @@
       width: 90%;
       max-width: 600px;
       margin-top: 20px;
+      margin-bottom: 50px;
     }
     .tab-content {
       display: none;
@@ -86,7 +87,7 @@
     .example-text { font-size: 16px; color: var(--text-muted); font-style: italic; }
     
     /* リスト・テキストエリア */
-    textarea { width: 100%; height: 150px; padding: 10px; box-sizing: border-box; margin-bottom: 10px; }
+    textarea { width: 100%; height: 150px; padding: 10px; box-sizing: border-box; margin-bottom: 10px; font-family: monospace; }
     ul { list-style: none; padding: 0; }
     li { background: var(--card-bg); margin-bottom: 8px; padding: 15px; border-radius: 5px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;}
     .list-info { font-size: 12px; color: var(--text-muted); display: block; margin-top: 5px;}
@@ -118,7 +119,10 @@
     </div>
 
     <div id="tab-learning" class="tab-content">
-      <div id="learning-progress" style="text-align: center; margin-bottom: 10px; font-weight: bold;"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div id="learning-progress" style="font-weight: bold; font-size: 16px;"></div>
+        <button onclick="suspendLearning()" class="btn" style="background-color: #9CA3AF; padding: 5px 10px; font-size: 12px;">⏸️ 中断して戻る</button>
+      </div>
       
       <div class="flashcard" id="flashcard-ui">
         <div class="word-title" id="card-word"></div>
@@ -161,33 +165,22 @@
 
     <div id="tab-import" class="tab-content">
       <h2>AIから単語をインポート</h2>
-      <p style="font-size: 14px;">AIに出力させたJSON配列を貼り付けてください。重複は自動でスキップされます。</p>
+      <p style="font-size: 14px;">AIに出力させたJSON配列を貼り付けてください。重複・形式不備は自動でスキップされます。</p>
       
       <textarea id="import-textarea" placeholder='[
   {
-    "word": "look up",
-    "meaning": "〜を調べる",
-    "example": "I will look up the word in the dictionary."
+    "word": "take off",
+    "meaning": "（服などを）脱ぐ",
+    "example": "He was taking his jacket off.",
+    "example_masked": "He was ______ his jacket ______."
   }
 ]'></textarea>
       <button onclick="handleImport()" class="btn btn-secondary" style="width: 100%; padding: 15px;">インポートを実行</button>
 
-      <div style="margin-top: 30px; background: #f3f4f6; padding: 15px; border-radius: 5px;">
-        <h4>📝 AI用プロンプト・サンプルJSON</h4>
-        <button onclick="copySampleJson()" class="btn" style="background: #9ca3af;">📋 サンプルをコピー</button>
-        <pre id="sample-json-code" style="font-size: 12px; overflow-x: auto;">
-[
-  {
-    "word": "look up",
-    "meaning": "〜を調べる",
-    "example": "I will look up the word in the dictionary."
-  },
-  {
-    "word": "C++",
-    "meaning": "C++（プログラミング言語）",
-    "example": "He is learning C++."
-  }
-]</pre>
+      <div id="import-result" style="display: none; margin-top: 20px; padding: 15px; border-radius: 5px; background-color: #e0f2fe; border: 1px solid #bae6fd;">
+        <h4 style="margin-top: 0; color: #0284c7; margin-bottom: 10px;">インポート結果</h4>
+        <p id="import-summary" style="font-weight: bold; margin-bottom: 10px; color: #0f172a;"></p>
+        <div id="import-details" style="font-size: 14px; color: #334155;"></div>
       </div>
     </div>
 
@@ -195,38 +188,82 @@
 
   <script>
     // ==========================================
-    // 状態管理
+    // 状態管理・初期化・正規化処理
     // ==========================================
     let learningQueue = [];
     let currentIndex = 0;
     let currentCard = null;
 
+    /** 単語カードのデータを最新の仕様に合わせて正規化 */
+    function normalizeCard(card) {
+      const repetition = Number(card.repetition || 0);
+      return {
+        id: card.id || Date.now().toString() + Math.random().toString(36).substring(2, 7),
+        word: String(card.word || "").trim(),
+        meaning: String(card.meaning || "").trim(),
+        example: String(card.example || ""),
+        example_masked: String(card.example_masked || ""),
+        status: card.status || (repetition === 0 ? "new" : "review"),
+        repetition: repetition,
+        interval: Number(card.interval || 0),
+        efactor: Number(card.efactor || 2.5),
+        lapses: Number(card.lapses || 0),
+        nextReviewDate: normalizeDate(card.nextReviewDate)
+      };
+    }
+
+    /** 日付データを安全にタイムスタンプに変換 */
+    function normalizeDate(value) {
+      if (!value) return new Date().getTime();
+      if (typeof value === "number") return value;
+      const parsed = new Date(value).getTime();
+      return Number.isNaN(parsed) ? new Date().getTime() : parsed;
+    }
+
+    // アプリ起動時の処理（マイグレーション）
     window.onload = () => {
+      let existingCards = JSON.parse(localStorage.getItem('my_vocab_cards')) || [];
+      if (existingCards.length > 0) {
+        // 既存データを最新仕様に一括変換して保存
+        const migratedCards = existingCards.map(normalizeCard);
+        localStorage.setItem('my_vocab_cards', JSON.stringify(migratedCards));
+      }
       renderVocabList();
     };
 
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
+      
       if(tabId === 'tab-list') renderVocabList();
+      // インポートタブを開くたびに前回の結果を隠す
+      if(tabId === 'tab-import') document.getElementById('import-result').style.display = 'none';
     }
 
     // ==========================================
     // 学習モードと抽出ロジック
     // ==========================================
+    /** 旧形式データにも対応する次回復習時間の取得 */
+    function getReviewTime(card) {
+      if (!card.nextReviewDate) return 0;
+      if (typeof card.nextReviewDate === "number") return card.nextReviewDate;
+      const time = new Date(card.nextReviewDate).getTime();
+      return Number.isNaN(time) ? 0 : time;
+    }
+
     function startLearningMode(mode) {
       const allCards = JSON.parse(localStorage.getItem('my_vocab_cards')) || [];
       const now = new Date().getTime();
 
       switch (mode) {
         case 'review':
-          learningQueue = allCards.filter(card => card.status !== 'new' && card.nextReviewDate <= now);
+          learningQueue = allCards.filter(card => card.status !== 'new' && getReviewTime(card) <= now);
           break;
         case 'new':
           learningQueue = allCards.filter(card => card.status === 'new' || (!card.status && (!card.repetition || card.repetition === 0))).slice(0, 10);
           break;
         case 'weak':
-          learningQueue = allCards.filter(card => (card.lapses || 0) > 0 || (card.efactor !== undefined && card.efactor < 2.0));
+          learningQueue = allCards.filter(card => card.status === 'learning' || (card.lapses || 0) >= 2 || (card.efactor !== undefined && card.efactor < 2.0));
           break;
       }
 
@@ -243,6 +280,17 @@
       currentIndex = 0;
       switchTab('tab-learning');
       showNextCard();
+    }
+
+    /** 学習の一時中断 */
+    function suspendLearning() {
+      if (confirm("学習を一時中断してホームに戻りますか？\n（※これまでに評価した単語の進捗は保存されています！）")) {
+        learningQueue = [];
+        currentIndex = 0;
+        currentCard = null;
+        speechSynthesis.cancel();
+        switchTab('tab-dashboard');
+      }
     }
 
     function escapeRegExp(string) {
@@ -266,9 +314,15 @@
       
       // 例文のヒント（穴埋め処理）
       if (currentCard.example) {
-        const safeWord = escapeRegExp(currentCard.word);
-        const regex = new RegExp(`(${safeWord})`, 'gi');
-        document.getElementById('card-hint').textContent = currentCard.example.replace(regex, '______');
+        if (currentCard.example_masked) {
+          // ① 新仕様：AIが作ってくれた高精度のマスク例文を使用
+          document.getElementById('card-hint').textContent = currentCard.example_masked;
+        } else {
+          // ② 旧仕様：正規表現のフォールバック
+          const safeWord = escapeRegExp(currentCard.word);
+          const regex = new RegExp(`(${safeWord})`, 'gi');
+          document.getElementById('card-hint').textContent = currentCard.example.replace(regex, '______');
+        }
         document.getElementById('card-example').textContent = ""; // 答えを見るまでは空
       } else {
         document.getElementById('card-hint').textContent = "";
@@ -306,16 +360,6 @@
     // ==========================================
     function evaluateCard(evaluation) {
       const now = new Date().getTime();
-      
-      // 後方互換性処理
-      if (!currentCard.status) {
-        currentCard.status = (!currentCard.repetition || currentCard.repetition === 0) ? 'new' : 'review';
-      }
-      if (currentCard.repetition === undefined) {
-        currentCard.repetition = 0;
-        currentCard.interval = 0;
-        currentCard.efactor = 2.5;
-      }
 
       switch (evaluation) {
         case 'forgot':
@@ -334,6 +378,7 @@
           break;
         case 'good':
           currentCard.status = 'review';
+          currentCard.lapses = Math.max(0, (currentCard.lapses || 0) - 1); // 苦手克服
           currentCard.repetition += 1;
           if (currentCard.repetition === 1) currentCard.interval = 1;
           else if (currentCard.repetition === 2) currentCard.interval = 6;
@@ -342,6 +387,7 @@
           break;
         case 'easy':
           currentCard.status = 'review';
+          currentCard.lapses = Math.max(0, (currentCard.lapses || 0) - 2); // 苦手克服
           currentCard.repetition += 1;
           currentCard.efactor += 0.15;
           if (currentCard.repetition === 1) currentCard.interval = 2;
@@ -377,25 +423,41 @@
 
         let existingCards = JSON.parse(localStorage.getItem('my_vocab_cards')) || [];
         let addedCount = 0;
-        let skippedCount = 0;
-        let invalidCount = 0;
+        let skippedWords = [];
+        let invalidItems = [];
         const existingWords = existingCards.map(card => card.word.toLowerCase());
 
-        newCards.forEach(newCard => {
-          if (!newCard.word || !newCard.meaning) {
-            invalidCount++;
+        newCards.forEach((newCard, index) => {
+          // 厳格なバリデーション
+          if (
+            !newCard.word ||
+            !newCard.meaning ||
+            typeof newCard.word !== 'string' ||
+            typeof newCard.meaning !== 'string' ||
+            newCard.word.trim() === '' ||
+            newCard.meaning.trim() === ''
+          ) {
+            // エラー表示用のラベル作成
+            const errorLabel = (newCard.word && typeof newCard.word === 'string') 
+                                ? newCard.word.trim() 
+                                : `(データ ${index + 1}番目)`;
+            invalidItems.push(errorLabel);
             return;
           } 
-          const wordLower = newCard.word.toLowerCase();
+
+          const normalizedWord = newCard.word.trim();
+          const normalizedMeaning = newCard.meaning.trim();
+          const wordLower = normalizedWord.toLowerCase();
 
           if (existingWords.includes(wordLower)) {
-            skippedCount++;
+            skippedWords.push(normalizedWord);
           } else {
             existingCards.push({
               id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
-              word: newCard.word,
-              meaning: newCard.meaning,
-              example: newCard.example || "",
+              word: normalizedWord,
+              meaning: normalizedMeaning,
+              example: newCard.example ? String(newCard.example).trim() : "",
+              example_masked: newCard.example_masked ? String(newCard.example_masked).trim() : "",
               status: 'new', 
               repetition: 0,
               interval: 0,
@@ -410,12 +472,41 @@
 
         localStorage.setItem('my_vocab_cards', JSON.stringify(existingCards));
         
-        let resultMessage = `インポート完了！\n✅ ${addedCount}件を追加\n🔄 ${skippedCount}件の重複をスキップ`;
-        if (invalidCount > 0) {
-          resultMessage += `\n⚠️ 形式不備（単語や意味が空）のため ${invalidCount}件 をスキップしました。`;
-        }
-        alert(resultMessage);
+        // --- 結果のUI表示構築 ---
+        const resultArea = document.getElementById('import-result');
+        const summaryElem = document.getElementById('import-summary');
+        const detailsElem = document.getElementById('import-details');
         
+        resultArea.style.display = 'block';
+        
+        let summaryText = `✅ ${addedCount}件を追加しました。`;
+        if (skippedWords.length > 0) summaryText += ` 🔄 ${skippedWords.length}件の重複をスキップ。`;
+        if (invalidItems.length > 0) summaryText += ` ⚠️ ${invalidItems.length}件の形式不備をスキップ。`;
+        summaryElem.textContent = summaryText;
+        
+        detailsElem.innerHTML = ''; // 初期化
+        
+        if (skippedWords.length > 0) {
+          const pSkip = document.createElement('p');
+          pSkip.style.margin = "5px 0";
+          const strongSkip = document.createElement('strong');
+          strongSkip.textContent = '重複スキップ: ';
+          pSkip.appendChild(strongSkip);
+          pSkip.appendChild(document.createTextNode(skippedWords.join(', ')));
+          detailsElem.appendChild(pSkip);
+        }
+        
+        if (invalidItems.length > 0) {
+          const pInv = document.createElement('p');
+          pInv.style.margin = "5px 0";
+          const strongInv = document.createElement('strong');
+          strongInv.textContent = '形式不備スキップ: ';
+          pInv.appendChild(strongInv);
+          pInv.appendChild(document.createTextNode(invalidItems.join(', ')));
+          detailsElem.appendChild(pInv);
+        }
+
+        alert(`インポート処理が完了しました！\n詳細は画面の結果エリアをご確認ください。`);
         document.getElementById('import-textarea').value = '';
         renderVocabList();
       } catch (error) {
@@ -513,7 +604,10 @@
              throw new Error("データが破損しているか、形式が異なります。（必須項目が欠落しています）");
           }
           
-          localStorage.setItem('my_vocab_cards', JSON.stringify(importedData));
+          // バックアップの復元時にも、すべてのデータを最新仕様に正規化して保存
+          const normalizedData = importedData.map(normalizeCard);
+          localStorage.setItem('my_vocab_cards', JSON.stringify(normalizedData));
+          
           alert("データの復元が完了しました！");
           renderVocabList();
         } catch (error) {
@@ -522,15 +616,6 @@
       };
       reader.readAsText(file);
       event.target.value = ''; 
-    }
-
-    function copySampleJson() {
-      const sampleText = document.getElementById('sample-json-code').textContent;
-      navigator.clipboard.writeText(sampleText).then(() => {
-        alert("サンプルJSONをクリップボードにコピーしました！");
-      }).catch(() => {
-        alert("コピーに失敗しました。");
-      });
     }
   </script>
 </body>
