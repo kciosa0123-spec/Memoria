@@ -246,9 +246,13 @@
 
     .filters {
       display: grid;
-      grid-template-columns: 1fr 130px 130px;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       margin-bottom: 12px;
+    }
+
+    .filters .filter-search {
+      grid-column: 1 / -1;
     }
 
     ul {
@@ -508,7 +512,7 @@
       <div class="panel">
         <h3 style="margin-top: 0;">登録済み単語 <span id="total-words">0</span>件</h3>
         <div class="filters">
-          <input type="search" id="search-input" placeholder="単語・意味で検索" oninput="renderVocabList()">
+          <input type="search" id="search-input" class="filter-search" placeholder="単語・意味で検索" oninput="renderVocabList()">
           <select id="status-filter" onchange="renderVocabList()">
             <option value="all">全状態</option>
             <option value="new">new</option>
@@ -517,6 +521,14 @@
           </select>
           <select id="cefr-filter" onchange="renderVocabList()">
             <option value="all">全CEFR</option>
+          </select>
+          <select id="importance-filter" onchange="renderVocabList()">
+            <option value="all">全重要度</option>
+            <option value="5">重要度 5</option>
+            <option value="4">重要度 4</option>
+            <option value="3">重要度 3</option>
+            <option value="2">重要度 2</option>
+            <option value="1">重要度 1</option>
           </select>
         </div>
         <ul id="vocab-list"></ul>
@@ -1043,7 +1055,7 @@
 
       // 単純な英単語なら語境界を使う。複合語・ハイフン語・句はそのまま置換する。
       if (/^[A-Za-z]+$/.test(word)) {
-        const regex = new RegExp(`\b${safeWord}\b`, 'gi');
+        const regex = new RegExp(`\\b${safeWord}\\b`, 'gi');
         return card.example.replace(regex, '______');
       }
 
@@ -1405,6 +1417,7 @@
       const searchTerm = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
       const statusFilter = document.getElementById('status-filter')?.value || 'all';
       const cefrFilter = document.getElementById('cefr-filter')?.value || 'all';
+      const importanceFilter = document.getElementById('importance-filter')?.value || 'all';
 
       const filteredCards = cards.filter(card => {
         const matchesSearch = !searchTerm ||
@@ -1414,8 +1427,9 @@
 
         const matchesStatus = statusFilter === 'all' || card.status === statusFilter;
         const matchesCefr = cefrFilter === 'all' || card.cefr === cefrFilter;
+        const matchesImportance = importanceFilter === 'all' || String(card.importance || 3) === importanceFilter;
 
-        return matchesSearch && matchesStatus && matchesCefr;
+        return matchesSearch && matchesStatus && matchesCefr && matchesImportance;
       });
 
       const listElement = document.getElementById('vocab-list');
@@ -1459,7 +1473,7 @@
 
       const info2 = document.createElement('span');
       info2.className = 'list-info';
-      info2.textContent = `状態: ${card.status || 'new'} | 連続正解: ${card.repetition || 0}回 | 苦手回数: ${card.lapses || 0} | 次回: ${formatDate(card.nextReviewDate)}`;
+      info2.textContent = `状態: ${card.status || 'new'} | 学習回数: ${card.repetition || 0}回 | 苦手回数: ${card.lapses || 0} | 次回: ${formatDate(card.nextReviewDate)}`;
 
       textContainer.appendChild(head);
       textContainer.appendChild(meaning);
