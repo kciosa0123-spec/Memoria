@@ -119,7 +119,7 @@
     .tab-content.active { 
       display: block; 
       opacity: 1;
-      animation: fadeIn 0.3s;
+      animation: fadeIn 0.3s forwards;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -208,13 +208,13 @@
       width: 14px;
       height: 14px;
       border-radius: 3px;
-      background-color: var(--border); /* 0枚の日（グレー） */
+      background-color: var(--border);
       flex-shrink: 0;
       position: relative;
     }
-    .heatmap-cell.level-1 { background-color: #A7F3D0; } /* 1〜10枚 */
-    .heatmap-cell.level-2 { background-color: #34D399; } /* 11〜30枚 */
-    .heatmap-cell.level-3 { background-color: #059669; } /* 31枚以上 */
+    .heatmap-cell.level-1 { background-color: #A7F3D0; } 
+    .heatmap-cell.level-2 { background-color: #34D399; } 
+    .heatmap-cell.level-3 { background-color: #059669; } 
     
     @media (prefers-color-scheme: dark) {
       .heatmap-cell.level-1 { background-color: #065F46; }
@@ -406,7 +406,6 @@
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .filters { grid-template-columns: 1fr; }
       .eval-buttons { flex-direction: column; }
-      /* モバイルでのタップしやすさ向上 */
       .btn-eval { width: 100%; min-height: 64px; } 
       li.word-item { flex-direction: column; }
       .word-actions { width: 100%; flex-direction: row; }
@@ -423,13 +422,16 @@
     <button id="nav-import" onclick="switchTab('tab-import')">➕ 追加</button>
   </nav>
 
+  <!-- トースト通知用コンテナ -->
   <div id="toast-container"></div>
 
   <div class="container">
 
+    <!-- 🏠 ホームダッシュボード -->
     <div id="tab-dashboard" class="tab-content active">
       <h2 style="text-align: center;">Memoria Lite</h2>
 
+      <!-- 統計グリッド -->
       <div class="stats-grid">
         <div class="stat-card">
           <div id="stat-total" class="stat-number">0</div>
@@ -449,6 +451,7 @@
         </div>
       </div>
 
+      <!-- 🌱 優しい記録システム (ウィークリー＆ヒートマップ) -->
       <div class="panel">
         <h3 style="margin-top: 0; display: flex; justify-content: space-between; align-items: center;">
           🌱 学習のきろく
@@ -467,9 +470,11 @@
 
         <p class="small-note" style="margin-bottom: 4px;">直近4週間の活動</p>
         <div id="heatmap-container" style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px;">
-          </div>
+          <!-- JSで自動生成 -->
+        </div>
       </div>
 
+      <!-- 学習開始パネル -->
       <div class="panel">
         <h3 style="margin-top: 0; text-align: center;">学習を始める</h3>
         <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -492,6 +497,7 @@
       </div>
     </div>
 
+    <!-- 🎓 学習モード -->
     <div id="tab-learning" class="tab-content">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px;">
         <div id="learning-progress" style="font-weight: bold; font-size: 16px;"></div>
@@ -512,6 +518,7 @@
 
         <button onclick="speakWord()" class="btn" style="background: var(--border); color: var(--text-main); margin-bottom: 20px;">🔊 発音</button>
 
+        <!-- アニメーション付きで表示される裏面 -->
         <div id="card-back" class="card-back-hidden">
           <hr style="border-top: 1px solid var(--border); margin: 20px 0;">
           <div class="meaning-text" id="card-meaning"></div>
@@ -531,6 +538,7 @@
       </div>
     </div>
 
+    <!-- 📋 単語管理 -->
     <div id="tab-list" class="tab-content">
       <h2>単語リストとデータ管理</h2>
 
@@ -565,10 +573,21 @@
             <option value="1">重要度 1</option>
           </select>
         </div>
+        
+        <!-- 一括操作バー -->
+        <div id="bulk-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px; cursor: pointer; color: var(--text-main);">
+            <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)" style="width: 16px; height: 16px; cursor: pointer;">
+            全て選択
+          </label>
+          <button onclick="deleteSelectedCards()" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">🗑️ 選択した単語を削除</button>
+        </div>
+
         <ul id="vocab-list"></ul>
       </div>
     </div>
 
+    <!-- ➕ AIインポート -->
     <div id="tab-import" class="tab-content">
       <h2>AIから単語をインポート</h2>
       <div class="panel">
@@ -935,10 +954,11 @@
     }
 
     function suspendLearning() {
+      if (!confirm('学習を一時中断してホームに戻りますか？\n進捗は自動保存されています。')) return;
       learningQueue = [];
       if ('speechSynthesis' in window) speechSynthesis.cancel();
       switchTab('tab-dashboard');
-      showToast('学習を中断しました。進捗は保存されています。');
+      showToast('学習を中断しました。');
     }
 
     function createMaskedExample(card) {
@@ -1070,7 +1090,8 @@
       let text = document.getElementById('import-textarea').value.trim();
       if (!text) { showToast('JSONが貼り付けられていません。'); return; }
       
-      text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim();
+      text = text.replace(/^```json\s*/i, '').replace(/^
+```\s*/i, '').replace(/```$/i, '').trim();
       const start = text.indexOf('['), end = text.lastIndexOf(']');
       if (start !== -1 && end !== -1 && end > start) text = text.slice(start, end + 1);
 
@@ -1080,19 +1101,51 @@
         
         const existingCards = normalizeCardsForSave(getCards());
         const existingKeys = new Set(existingCards.map(makeDuplicateKey));
-        let added = 0;
+        let addedCount = 0;
+        const skippedWords = [];
+        const invalidItems = [];
 
-        newCards.forEach(item => {
-          if (!item || typeof item.word !== 'string' || typeof item.meaning !== 'string' || !item.word.trim() || !item.meaning.trim()) return;
+        newCards.forEach((item, index) => {
+          if (!item || typeof item !== 'object' || typeof item.word !== 'string' || typeof item.meaning !== 'string' || !item.word.trim() || !item.meaning.trim()) {
+             invalidItems.push(item && item.word ? item.word : `データ${index+1}番目`);
+             return;
+          }
           const card = normalizeCard({ ...item, status: 'new', repetition: 0, interval: 0, lapses: 0, createdAt: new Date().getTime() });
           const key = makeDuplicateKey(card);
-          if (!existingKeys.has(key)) { existingCards.push(card); existingKeys.add(key); added++; }
+          
+          if (existingKeys.has(key)) {
+             skippedWords.push(`${card.word}（${card.meaning}）`);
+             return;
+          }
+          existingCards.push(card); 
+          existingKeys.add(key); 
+          addedCount++;
         });
 
         if (saveCards(existingCards)) {
-          showToast(`✅ ${added}件の単語をインポートしました！`);
+          showToast(`✅ ${addedCount}件の単語をインポートしました！`);
           document.getElementById('import-textarea').value = '';
-          populateCefrFilter(); renderVocabList(); switchTab('tab-list');
+          populateCefrFilter(); renderVocabList(); 
+          
+          const resultArea = document.getElementById('import-result');
+          const summaryElem = document.getElementById('import-summary');
+          const detailsElem = document.getElementById('import-details');
+          resultArea.style.display = 'block';
+          detailsElem.textContent = '';
+          
+          let summaryText = `✅ ${addedCount}件を追加しました。`;
+          if (skippedWords.length > 0) summaryText += ` 🔄 ${skippedWords.length}件の重複をスキップ。`;
+          if (invalidItems.length > 0) summaryText += ` ⚠️ ${invalidItems.length}件の形式不備をスキップ。`;
+          summaryElem.textContent = summaryText;
+
+          const summarizeList = (arr) => arr.length <= 30 ? arr.join(', ') : arr.slice(0, 30).join(', ') + ` ほか${arr.length - 30}件`;
+          
+          if (skippedWords.length > 0) {
+            const p = document.createElement('p'); p.innerHTML = `<strong>重複スキップ: </strong>${summarizeList(skippedWords)}`; detailsElem.appendChild(p);
+          }
+          if (invalidItems.length > 0) {
+            const p = document.createElement('p'); p.innerHTML = `<strong>形式不備スキップ: </strong>${summarizeList(invalidItems)}`; detailsElem.appendChild(p);
+          }
         }
       } catch (error) {
         showToast('❌ JSONの形式が正しくありません。');
@@ -1104,7 +1157,7 @@
     }
 
     // ==========================================
-    // リスト管理
+    // リスト管理・一括操作
     // ==========================================
     function populateCefrFilter() {
       const select = document.getElementById('cefr-filter');
@@ -1124,7 +1177,7 @@
       const iFilter = document.getElementById('importance-filter')?.value || 'all';
 
       const filtered = cards.filter(c => 
-        (!term || String(c.word).toLowerCase().includes(term) || String(c.meaning).toLowerCase().includes(term)) &&
+        (!term || String(c.word).toLowerCase().includes(term) || String(c.meaning).toLowerCase().includes(term) || String(c.example).toLowerCase().includes(term)) &&
         (sFilter === 'all' || c.status === sFilter) &&
         (cFilter === 'all' || c.cefr === cFilter) &&
         (iFilter === 'all' || String(c.importance||3) === iFilter)
@@ -1133,11 +1186,18 @@
       const ul = document.getElementById('vocab-list');
       ul.innerHTML = filtered.length ? '' : '<p class="small-note">表示できる単語がありません。</p>';
       filtered.forEach(c => ul.appendChild(editingCardId === c.id ? createEditListItem(c) : createViewListItem(c)));
+
+      // リスト再描画時に「全て選択」のチェックを外す
+      const selectAllCb = document.getElementById('select-all-cb');
+      if (selectAllCb) selectAllCb.checked = false;
     }
 
     function createViewListItem(c) {
       const li = document.createElement('li'); li.className = 'word-item';
       li.innerHTML = `
+        <div style="display: flex; align-items: center; padding-top: 4px;">
+          <input type="checkbox" class="bulk-cb" value="${c.id}" style="width: 18px; height: 18px; cursor: pointer;">
+        </div>
         <div class="word-main">
           <div class="word-head">${c.word}</div><div class="word-meaning">${c.meaning}</div>
           <span class="list-info">品詞: ${c.pos} | CEFR: ${c.cefr} | 重要度: ${c.importance}</span>
@@ -1187,6 +1247,34 @@
       saveCards(getCards().filter(c => c.id !== id));
       if (editingCardId === id) editingCardId = null;
       renderVocabList(); showToast('削除しました。');
+    }
+
+    // ==========================================
+    // 一括削除機能
+    // ==========================================
+    function toggleSelectAll(checkbox) {
+      document.querySelectorAll('.bulk-cb').forEach(cb => cb.checked = checkbox.checked);
+    }
+
+    function deleteSelectedCards() {
+      const checkedBoxes = document.querySelectorAll('.bulk-cb:checked');
+      if (checkedBoxes.length === 0) {
+        showToast('削除する単語が選択されていません。');
+        return;
+      }
+      if (!confirm(`選択した ${checkedBoxes.length} 件の単語を本当に削除しますか？\nこの操作は元に戻せません。`)) {
+        return;
+      }
+
+      const idsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
+      const currentCards = getCards();
+      const newCards = currentCards.filter(c => !idsToDelete.includes(c.id));
+
+      if (saveCards(newCards, { warnNearLimit: false })) {
+        if (idsToDelete.includes(editingCardId)) editingCardId = null;
+        renderVocabList();
+        showToast(`🗑️ ${idsToDelete.length} 件の単語を一括削除しました。`);
+      }
     }
 
     // ==========================================
