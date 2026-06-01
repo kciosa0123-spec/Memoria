@@ -22,8 +22,10 @@
       --border: #E5E7EB;
       --info-bg: #E0F2FE;
       --info-border: #BAE6FD;
+      --info-heading: #0284C7;
       --warn-bg: #FEF3C7;
       --warn-border: #FDE68A;
+      --warn-text: #92400E;
       --badge-pos-bg: #E0E7FF; --badge-pos-txt: #3730A3;
       --badge-cefr-bg: #DCFCE7; --badge-cefr-txt: #166534;
       --badge-imp-bg: #FEF3C7; --badge-imp-txt: #92400E;
@@ -41,8 +43,10 @@
         --border: #374151;
         --info-bg: #082F49;
         --info-border: #0369A1;
+        --info-heading: #7DD3FC;
         --warn-bg: #451A03;
         --warn-border: #78350F;
+        --warn-text: #FCD34D;
         --badge-pos-bg: #312E81; --badge-pos-txt: #E0E7FF;
         --badge-cefr-bg: #14532D; --badge-cefr-txt: #DCFCE7;
         --badge-imp-bg: #78350F; --badge-imp-txt: #FEF3C7;
@@ -83,13 +87,13 @@
     .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
     .stat-number { font-size: 26px; font-weight: 800; color: var(--primary); line-height: 1.2; }
     .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-    
+
     .mode-button { width: 100%; padding: 18px; font-size: 17px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     .mode-count { background: rgba(255,255,255,0.22); padding: 3px 9px; border-radius: 999px; font-size: 13px; white-space: nowrap; }
 
     /* ヒートマップ */
     .heatmap-cell { width: 14px; height: 14px; border-radius: 3px; background-color: var(--border); flex-shrink: 0; position: relative; }
-    .heatmap-cell.level-1 { background-color: #A7F3D0; } .heatmap-cell.level-2 { background-color: #34D399; } .heatmap-cell.level-3 { background-color: #059669; } 
+    .heatmap-cell.level-1 { background-color: #A7F3D0; } .heatmap-cell.level-2 { background-color: #34D399; } .heatmap-cell.level-3 { background-color: #059669; }
     @media (prefers-color-scheme: dark) { .heatmap-cell.level-1 { background-color: #065F46; } .heatmap-cell.level-2 { background-color: #047857; } .heatmap-cell.level-3 { background-color: #10B981; } }
     .heatmap-cell[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; pointer-events: none; z-index: 10; }
 
@@ -124,13 +128,13 @@
     .list-info { font-size: 12px; color: var(--text-muted); display: block; margin-top: 6px; } .word-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; } .word-actions .btn { padding: 6px 10px; white-space: nowrap; }
     .edit-form { width: 100%; } .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; } .edit-grid label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--text-muted); font-weight: 700; }
     .edit-grid label.full { grid-column: 1 / -1; } .edit-grid textarea { height: 72px; margin-bottom: 0; font-family: inherit; font-size: 14px; } .edit-actions { display: flex; gap: 8px; margin-top: 10px; } .edit-actions .btn { flex: 1; }
-    .small-note { font-size: 13px; color: var(--text-muted); } .storage-note { padding: 8px 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--info-border); margin: 10px 0; } .storage-note.warning { background: var(--warn-bg); border-color: var(--warn-border); color: #92400E; font-weight: 700; }
-    .result-box { display: none; margin-top: 18px; padding: 15px; border-radius: 10px; background-color: var(--info-bg); border: 1px solid var(--info-border); } .result-box h4 { margin-top: 0; margin-bottom: 8px; color: #0284C7; }
+    .small-note { font-size: 13px; color: var(--text-muted); } .storage-note { padding: 8px 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--info-border); margin: 10px 0; } .storage-note.warning { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); font-weight: 700; }
+    .result-box { display: none; margin-top: 18px; padding: 15px; border-radius: 10px; background-color: var(--info-bg); border: 1px solid var(--info-border); } .result-box h4 { margin-top: 0; margin-bottom: 8px; color: var(--info-heading); }
     pre { background: #111827; color: #E5E7EB; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 12px; }
 
     @media (max-width: 560px) {
       nav { gap: 4px; } nav button { font-size: 14px; padding: 7px 8px; } .container { width: 94%; } .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .filters { grid-template-columns: 1fr; } .eval-buttons { flex-direction: column; } .btn-eval { width: 100%; min-height: 64px; } 
+      .filters { grid-template-columns: 1fr; } .eval-buttons { flex-direction: column; } .btn-eval { width: 100%; min-height: 64px; }
       li.word-item { flex-direction: column; } .word-actions { width: 100%; flex-direction: row; } .word-actions .btn { flex: 1; } .edit-grid { grid-template-columns: 1fr; }
     }
   </style>
@@ -188,6 +192,9 @@
             <span>💪 苦手な単語を特訓する</span><span id="btn-count-weak" class="mode-count">0件</span>
           </button>
         </div>
+        <p class="small-note" style="margin-bottom: 0;">
+          学習画面では Space で答え表示、1〜4 で評価できます。「忘れた」を押した単語は、このセッションの最後にもう一度出ます。
+        </p>
       </div>
     </div>
 
@@ -207,7 +214,7 @@
         </div>
         <div class="hint-box"><div class="example-text" id="card-hint"></div></div>
         <button onclick="speakWord()" class="btn" style="background: var(--border); color: var(--text-main); margin-bottom: 20px;">🔊 発音</button>
-        
+
         <div id="card-back" class="card-back-hidden">
           <hr style="border-top: 1px solid var(--border); margin: 20px 0;">
           <div class="meaning-text" id="card-meaning"></div>
@@ -247,7 +254,7 @@
           <select id="cefr-filter" onchange="renderVocabList()"><option value="all">全CEFR</option></select>
           <select id="importance-filter" onchange="renderVocabList()"><option value="all">全重要度</option><option value="5">重要度 5</option><option value="4">重要度 4</option><option value="3">重要度 3</option><option value="2">重要度 2</option><option value="1">重要度 1</option></select>
         </div>
-        
+
         <div id="bulk-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
           <label style="display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px; cursor: pointer; color: var(--text-main);">
             <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)" style="width: 16px; height: 16px; cursor: pointer;"> 全て選択
@@ -286,7 +293,11 @@
     const STORAGE_SCHEMA_VERSION_KEY = 'my_vocab_schema_version';
     const CURRENT_SCHEMA_VERSION = '2';
     const LOCAL_STORAGE_LIMIT_BYTES = 5 * 1024 * 1024;
+    const MAX_IMPORT_DETAIL_ITEMS = 30;
     const MAX_EFACTOR = 3.0;
+
+    // インポート時に外部JSONから持ち込ませない内部管理フィールド（fix 8）
+    const IMPORT_BLOCKED_FIELDS = ['id', 'status', 'repetition', 'interval', 'efactor', 'lapses', 'nextReviewDate', 'createdAt'];
 
     let learningQueue = [];
     let currentIndex = 0;
@@ -306,7 +317,20 @@
 
     // HTMLインジェクション（画面破壊）を防ぐエスケープ処理
     function escapeHTML(str) {
-      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return String(str === undefined || str === null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // localStorage への書き込みを一元化し、容量上限などの例外を握りつぶさず扱う
+    function safeSetItem(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch (e) {
+        console.error(`localStorage への書き込みに失敗しました (key=${key}):`, e);
+        return false;
+      }
     }
 
     // ==========================================
@@ -348,15 +372,29 @@
       const now = new Date();
       return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     }
+    function dateStampOf(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+    // 重複判定キー用のテキスト正規化（NFKC・空白圧縮・小文字化）（fix 7）
+    function normalizeKeyText(value) {
+      return String(value || '').normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
+    }
 
     // ==========================================
     // 学習履歴・優しい記録システム
     // ==========================================
+    // 記録系の失敗は学習フローを止めない（fix 2）
     function recordActivity() {
-      const today = todayStamp();
-      const activityData = JSON.parse(localStorage.getItem(ACTIVITY_STORAGE_KEY) || '{}');
-      activityData[today] = (activityData[today] || 0) + 1;
-      localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(activityData));
+      try {
+        const today = todayStamp();
+        let activityData = {};
+        try { activityData = JSON.parse(localStorage.getItem(ACTIVITY_STORAGE_KEY) || '{}') || {}; } catch (_) { activityData = {}; }
+        if (typeof activityData !== 'object' || activityData === null) activityData = {};
+        activityData[today] = (activityData[today] || 0) + 1;
+        safeSetItem(ACTIVITY_STORAGE_KEY, JSON.stringify(activityData));
+      } catch (e) {
+        console.error('学習履歴の記録に失敗しました:', e);
+      }
     }
     function changeWeeklyGoal() {
       const currentGoal = localStorage.getItem(WEEKLY_GOAL_KEY) || '100';
@@ -364,25 +402,31 @@
       if (input !== null) {
         const newGoal = parseInt(input, 10);
         if (!isNaN(newGoal) && newGoal > 0) {
-          localStorage.setItem(WEEKLY_GOAL_KEY, newGoal.toString());
-          renderActivityStats(); showToast(`週の目標を ${newGoal} 枚に設定しました。`);
+          if (safeSetItem(WEEKLY_GOAL_KEY, newGoal.toString())) {
+            renderActivityStats(); showToast(`週の目標を ${newGoal} 枚に設定しました。`);
+          } else {
+            showToast('目標の保存に失敗しました。');
+          }
         } else { showToast('正しい数値を入力してください。'); }
       }
+    }
+    function getActivityData() {
+      try { const d = JSON.parse(localStorage.getItem(ACTIVITY_STORAGE_KEY) || '{}'); return (d && typeof d === 'object') ? d : {}; }
+      catch (_) { return {}; }
     }
     function getWeeklyTotal(activityData) {
       let total = 0; const now = new Date();
       const daysSinceMonday = now.getDay() === 0 ? 6 : now.getDay() - 1;
       for (let i = 0; i <= daysSinceMonday; i++) {
         const d = new Date(); d.setDate(now.getDate() - i);
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        total += (activityData[dateStr] || 0);
+        total += (activityData[dateStampOf(d)] || 0);
       }
       return total;
     }
     function renderActivityStats() {
       const container = document.getElementById('heatmap-container'); if (!container) return;
-      const activityData = JSON.parse(localStorage.getItem(ACTIVITY_STORAGE_KEY) || '{}');
-      const weeklyGoal = parseInt(localStorage.getItem(WEEKLY_GOAL_KEY) || '100', 10);
+      const activityData = getActivityData();
+      const weeklyGoal = parseInt(localStorage.getItem(WEEKLY_GOAL_KEY) || '100', 10) || 100;
       const weeklyTotal = getWeeklyTotal(activityData);
       const progressPercent = Math.min(100, Math.round((weeklyTotal / weeklyGoal) * 100));
       document.getElementById('weekly-progress-text').textContent = `${weeklyTotal} / ${weeklyGoal} 枚`;
@@ -391,7 +435,7 @@
       container.innerHTML = '';
       for (let i = 27; i >= 0; i--) {
         const d = new Date(); d.setDate(d.getDate() - i);
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const dateStr = dateStampOf(d);
         const count = activityData[dateStr] || 0;
         const cell = document.createElement('div'); cell.className = 'heatmap-cell'; cell.setAttribute('data-tooltip', `${dateStr}: ${count}枚`);
         if (count > 30) cell.classList.add('level-3'); else if (count > 10) cell.classList.add('level-2'); else if (count > 0) cell.classList.add('level-1');
@@ -404,15 +448,33 @@
     // データ読み書き・正規化
     // ==========================================
     function getCards() {
-      try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+      try { const raw = localStorage.getItem(STORAGE_KEY); const parsed = raw ? JSON.parse(raw) : []; return Array.isArray(parsed) ? parsed : []; } catch (e) { return []; }
     }
     function getValidCards() {
       return getCards().filter(c => c && typeof c === 'object' && typeof c.word === 'string' && typeof c.meaning === 'string' && c.word.trim() !== '' && c.meaning.trim() !== '');
     }
+    // 容量上限の事前警告（1日1回）（fix 5）
+    function warnIfStorageNearLimit() {
+      const info = getStorageUsageInfo();
+      if (info.percent < 80) return;
+      const today = todayStamp();
+      if (localStorage.getItem(STORAGE_WARNING_DATE_KEY) === today) return;
+      safeSetItem(STORAGE_WARNING_DATE_KEY, today);
+      alert(
+        `⚠️ 保存容量がかなり増えています。\n` +
+        `現在の使用量: 約${info.mb}MB（目安 ${info.percent}%）\n\n` +
+        `バックアップを取り、不要な単語を削除してください。\n数千語以上の長期運用では、IndexedDB対応版の利用を検討してください。`
+      );
+    }
     function saveCards(cards, options = {}) {
-      const cardsToSave = options.normalizeBeforeSave !== false ? normalizeCardsForSave(cards) : cards;
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cardsToSave)); } catch (e) { alert('⚠️ 容量上限エラー\n保存に失敗しました。'); return false; }
+      const { normalizeBeforeSave = true, warnNearLimit = true } = options;
+      const cardsToSave = normalizeBeforeSave ? normalizeCardsForSave(cards) : cards;
+      if (!safeSetItem(STORAGE_KEY, JSON.stringify(cardsToSave))) {
+        alert('⚠️ データの保存に失敗しました。\nブラウザの保存容量が上限に達している可能性があります。\n\n「単語管理」からエクスポートでバックアップを取り、不要な単語を削除してください。');
+        return false;
+      }
       updateDashboard(); updateStorageUsageDisplay();
+      if (warnNearLimit) warnIfStorageNearLimit();
       return true;
     }
     function normalizeCard(c) {
@@ -430,10 +492,14 @@
     function normalizeCardsForSave(cards) { return (Array.isArray(cards) ? cards : []).map(normalizeCard).filter(c => c.word && c.meaning); }
     function migrateExistingCards() {
       if (localStorage.getItem(STORAGE_SCHEMA_VERSION_KEY) === CURRENT_SCHEMA_VERSION) return;
-      const cards = getCards(); if (cards.length > 0) localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeCardsForSave(cards)));
-      localStorage.setItem(STORAGE_SCHEMA_VERSION_KEY, CURRENT_SCHEMA_VERSION);
+      const cards = getCards();
+      if (cards.length > 0) {
+        if (!safeSetItem(STORAGE_KEY, JSON.stringify(normalizeCardsForSave(cards)))) return; // 保存失敗時はバージョン更新も保留
+      }
+      safeSetItem(STORAGE_SCHEMA_VERSION_KEY, CURRENT_SCHEMA_VERSION);
     }
-    function makeDuplicateKey(c) { return [String(c.word).toLowerCase().trim(), String(c.pos).toLowerCase().trim(), String(c.meaning).toLowerCase().trim()].join('::'); }
+    // 重複判定キー（word+pos+meaning）（fix 7: NFKC・空白圧縮を復活）
+    function makeDuplicateKey(c) { return [normalizeKeyText(c.word), normalizeKeyText(c.pos), normalizeKeyText(c.meaning)].join('::'); }
     function getStorageUsageInfo() {
       const bytes = new Blob([localStorage.getItem(STORAGE_KEY) || '']).size;
       return { bytes, mb: Math.round((bytes / 1024 / 1024) * 100) / 100, percent: Math.round((bytes / LOCAL_STORAGE_LIMIT_BYTES) * 100) };
@@ -504,7 +570,8 @@
     }
     function suspendLearning() {
       if (!confirm('学習を一時中断してホームに戻りますか？\n進捗は自動保存されています。')) return;
-      learningQueue = []; if ('speechSynthesis' in window) speechSynthesis.cancel();
+      learningQueue = []; currentIndex = 0; currentCard = null; sessionInitialCount = 0; sessionRequeuedCount = 0; isEvaluating = false;
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
       switchTab('tab-dashboard'); showToast('学習を中断しました。');
     }
     function createMaskedExample(card) {
@@ -515,11 +582,15 @@
       return card.example.replace(regex, '______');
     }
     function showNextCard() {
-      if (currentIndex >= learningQueue.length) { showToast('🎉 セッション完了！お疲れ様でした！'); currentCard = null; switchTab('tab-dashboard'); return; }
+      if (currentIndex >= learningQueue.length) {
+        showToast('🎉 セッション完了！お疲れ様でした！');
+        currentCard = null; sessionInitialCount = 0; sessionRequeuedCount = 0; isEvaluating = false;
+        switchTab('tab-dashboard'); return;
+      }
       currentCard = learningQueue[currentIndex];
       const remaining = Math.max(0, learningQueue.length - currentIndex);
       document.getElementById('learning-progress').textContent = sessionRequeuedCount > 0 ? `残り ${remaining}枚（初期${sessionInitialCount}・再出題 +${sessionRequeuedCount}）` : `残り ${remaining}枚（全${sessionInitialCount}枚）`;
-      
+
       document.getElementById('card-word').textContent = currentCard.word;
       document.getElementById('card-pos').textContent = `品詞: ${currentCard.pos || 'unknown'}`;
       document.getElementById('card-cefr').textContent = `CEFR: ${currentCard.cefr || 'Unknown'}`;
@@ -527,7 +598,7 @@
       document.getElementById('card-meaning').textContent = currentCard.meaning;
       document.getElementById('card-hint').textContent = createMaskedExample(currentCard);
       document.getElementById('card-example').textContent = '';
-      
+
       document.getElementById('card-back').className = 'card-back-hidden';
       document.getElementById('eval-buttons').style.display = 'none'; document.getElementById('btn-show-answer').style.display = 'block';
     }
@@ -561,7 +632,11 @@
         }
 
         const allCards = getCards(), cardIndex = allCards.findIndex(c => c.id === currentCard.id);
-        if (cardIndex !== -1) { allCards[cardIndex] = currentCard; saveCards(allCards, { warnNearLimit: false }); }
+        if (cardIndex !== -1) {
+          allCards[cardIndex] = currentCard;
+          // 保存に失敗したら、進捗が消えたまま先へ進まない（fix 3）
+          if (!saveCards(allCards, { warnNearLimit: false })) return;
+        }
         if (evaluation === 'forgot') { learningQueue.push({ ...currentCard }); sessionRequeuedCount++; }
 
         recordActivity(); currentIndex++; showNextCard();
@@ -596,7 +671,7 @@
       const cFilter = document.getElementById('cefr-filter')?.value || 'all';
       const iFilter = document.getElementById('importance-filter')?.value || 'all';
 
-      const filtered = cards.filter(c => 
+      const filtered = cards.filter(c =>
         (!term || String(c.word).toLowerCase().includes(term) || String(c.meaning).toLowerCase().includes(term) || String(c.example).toLowerCase().includes(term)) &&
         (sFilter === 'all' || c.status === sFilter) &&
         (cFilter === 'all' || c.cefr === cFilter) &&
@@ -611,6 +686,8 @@
       if (selectAllCb) selectAllCb.checked = false;
     }
 
+    // fix 6: innerHTMLに埋め込む全ての変数（数値含む）をescapeHTMLで統一。
+    //         クリックハンドラはインライン文字列連結を避け、JSプロパティでバインドする。
     function createViewListItem(c) {
       const li = document.createElement('li'); li.className = 'word-item';
       let html = `
@@ -619,58 +696,74 @@
         </div>
         <div class="word-main">
           <div class="word-head">${escapeHTML(c.word)}</div><div class="word-meaning">${escapeHTML(c.meaning)}</div>
-          <span class="list-info">品詞: ${escapeHTML(c.pos)} | CEFR: ${escapeHTML(c.cefr)} | 重要度: ${c.importance}</span>
-          <span class="list-info">状態: ${c.status} | 学習: ${c.repetition}回 | 次回: ${formatDate(c.nextReviewDate)}</span>`;
-      
+          <span class="list-info">品詞: ${escapeHTML(c.pos)} | CEFR: ${escapeHTML(c.cefr)} | 重要度: ${escapeHTML(c.importance)}</span>
+          <span class="list-info">状態: ${escapeHTML(c.status)} | 学習回数: ${escapeHTML(c.repetition)}回 | 苦手回数: ${escapeHTML(c.lapses)} | 次回: ${escapeHTML(formatDate(c.nextReviewDate))}</span>`;
+
       if (c.example) html += `<span class="list-info">例文: ${escapeHTML(c.example)}</span>`;
-      
+
       html += `</div>
         <div class="word-actions">
-          <button class="btn btn-secondary" onclick="editingCardId='${escapeHTML(c.id)}';renderVocabList()">編集</button>
-          <button class="btn btn-danger" onclick="deleteCard('${escapeHTML(c.id)}')">削除</button>
+          <button class="btn btn-secondary" data-edit-id="${escapeHTML(c.id)}">編集</button>
+          <button class="btn btn-danger" data-delete-id="${escapeHTML(c.id)}">削除</button>
         </div>`;
-      li.innerHTML = html; return li;
+      li.innerHTML = html;
+
+      li.querySelector('[data-edit-id]').addEventListener('click', () => { editingCardId = c.id; renderVocabList(); });
+      li.querySelector('[data-delete-id]').addEventListener('click', () => deleteCard(c.id));
+      return li;
     }
 
     function createEditListItem(c) {
       const li = document.createElement('li'); li.className = 'word-item';
+      const eid = escapeHTML(c.id);
       li.innerHTML = `
         <div class="edit-form">
           <div class="word-head">カードを編集</div>
           <div class="edit-grid">
-            <label>単語<input id="e-w-${escapeHTML(c.id)}" value="${escapeHTML(c.word)}"></label>
-            <label>意味<input id="e-m-${escapeHTML(c.id)}" value="${escapeHTML(c.meaning)}"></label>
-            <label>品詞<input id="e-p-${escapeHTML(c.id)}" value="${escapeHTML(c.pos)}"></label>
-            <label>CEFR<input id="e-c-${escapeHTML(c.id)}" value="${escapeHTML(c.cefr)}"></label>
-            <label class="full">例文<textarea id="e-ex-${escapeHTML(c.id)}">${escapeHTML(c.example)}</textarea></label>
-            <!-- 抜け落ちていた「マスク例文」を復活 -->
-            <label class="full">マスク例文<textarea id="e-exm-${escapeHTML(c.id)}">${escapeHTML(c.example_masked)}</textarea></label>
+            <label>単語<input id="e-w-${eid}" value="${escapeHTML(c.word)}"></label>
+            <label>意味<input id="e-m-${eid}" value="${escapeHTML(c.meaning)}"></label>
+            <label>品詞<input id="e-p-${eid}" value="${escapeHTML(c.pos)}"></label>
+            <label>CEFR<input id="e-c-${eid}" value="${escapeHTML(c.cefr)}"></label>
+            <label>重要度 1〜5<input id="e-i-${eid}" type="number" min="1" max="5" value="${escapeHTML(c.importance)}"></label>
+            <label class="full">例文<textarea id="e-ex-${eid}">${escapeHTML(c.example)}</textarea></label>
+            <label class="full">マスク例文<textarea id="e-exm-${eid}">${escapeHTML(c.example_masked)}</textarea></label>
           </div>
+          <p class="small-note">学習回数・EF・次回復習日は編集対象外です。</p>
           <div class="edit-actions">
-            <button class="btn btn-primary" onclick="saveEdit('${escapeHTML(c.id)}')">保存</button>
-            <button class="btn btn-muted" onclick="editingCardId=null;renderVocabList()">取消</button>
+            <button class="btn btn-primary" data-save-id="${eid}">保存</button>
+            <button class="btn btn-muted" data-cancel-edit="1">取消</button>
           </div>
         </div>`;
+
+      li.querySelector('[data-save-id]').addEventListener('click', () => saveEdit(c.id));
+      li.querySelector('[data-cancel-edit]').addEventListener('click', () => { editingCardId = null; renderVocabList(); });
       return li;
     }
 
     function saveEdit(id) {
       const cards = getCards(), idx = cards.findIndex(c => c.id === id);
-      if (idx === -1) return;
-      const updated = normalizeCard({ ...cards[idx], 
+      if (idx === -1) { showToast('編集対象のカードが見つかりません。'); editingCardId = null; renderVocabList(); return; }
+      const updated = normalizeCard({ ...cards[idx],
         word: document.getElementById(`e-w-${id}`).value, meaning: document.getElementById(`e-m-${id}`).value,
         pos: document.getElementById(`e-p-${id}`).value, cefr: document.getElementById(`e-c-${id}`).value,
+        importance: document.getElementById(`e-i-${id}`).value,
         example: document.getElementById(`e-ex-${id}`).value, example_masked: document.getElementById(`e-exm-${id}`).value
       });
       if (!updated.word || !updated.meaning) { showToast('単語と意味は必須です。'); return; }
-      cards[idx] = updated; saveCards(cards); editingCardId = null; renderVocabList(); showToast('保存しました。');
+
+      const updatedKey = makeDuplicateKey(updated);
+      if (cards.some(c => c.id !== id && makeDuplicateKey(c) === updatedKey)) { showToast('同じ単語・品詞・意味のカードがすでにあります。'); return; }
+
+      cards[idx] = updated;
+      if (!saveCards(cards)) return;
+      editingCardId = null; populateCefrFilter(); renderVocabList(); showToast('保存しました。');
     }
 
     function deleteCard(id) {
       if (!confirm('本当に削除しますか？')) return;
-      saveCards(getCards().filter(c => c.id !== id));
+      if (!saveCards(getCards().filter(c => c.id !== id))) return;
       if (editingCardId === id) editingCardId = null;
-      renderVocabList(); showToast('削除しました。');
+      populateCefrFilter(); renderVocabList(); showToast('削除しました。');
     }
 
     function toggleSelectAll(checkbox) { document.querySelectorAll('.bulk-cb').forEach(cb => cb.checked = checkbox.checked); }
@@ -682,13 +775,20 @@
       const newCards = getCards().filter(c => !idsToDelete.includes(c.id));
       if (saveCards(newCards, { warnNearLimit: false })) {
         if (idsToDelete.includes(editingCardId)) editingCardId = null;
-        renderVocabList(); showToast(`🗑️ ${idsToDelete.length} 件の単語を一括削除しました。`);
+        populateCefrFilter(); renderVocabList(); showToast(`🗑️ ${idsToDelete.length} 件の単語を一括削除しました。`);
       }
     }
 
     // ==========================================
     // AIインポート・バックアップ
     // ==========================================
+    // 外部JSONから内部管理フィールドを持ち込ませない（fix 8）
+    function pickImportableFields(item) {
+      const clean = {};
+      Object.keys(item).forEach(k => { if (!IMPORT_BLOCKED_FIELDS.includes(k)) clean[k] = item[k]; });
+      return clean;
+    }
+
     function handleImport() {
       let text = document.getElementById('import-textarea').value.trim();
       if (!text) { showToast('JSONが貼り付けられていません。'); return; }
@@ -704,9 +804,10 @@
 
         newCards.forEach((item, index) => {
           if (!item || typeof item !== 'object' || typeof item.word !== 'string' || typeof item.meaning !== 'string' || !item.word.trim() || !item.meaning.trim()) {
-             invalidItems.push(item && item.word ? item.word : `データ${index+1}番目`); return;
+             invalidItems.push(item && typeof item === 'object' && typeof item.word === 'string' && item.word.trim() ? item.word.trim() : `データ${index+1}番目`); return;
           }
-          const card = normalizeCard({ ...item, status: 'new', repetition: 0, interval: 0, lapses: 0, createdAt: new Date().getTime() });
+          // ...item を丸ごと展開せず、語彙フィールドのみ採用してから初期SRS値を付与
+          const card = normalizeCard({ ...pickImportableFields(item), status: 'new', repetition: 0, interval: 0, efactor: 2.5, lapses: 0, nextReviewDate: new Date().getTime(), createdAt: new Date().getTime() });
           const key = makeDuplicateKey(card);
           if (existingKeys.has(key)) { skippedWords.push(`${card.word}（${card.meaning}）`); return; }
           existingCards.push(card); existingKeys.add(key); addedCount++;
@@ -714,34 +815,53 @@
 
         if (saveCards(existingCards)) {
           showToast(`✅ ${addedCount}件の単語をインポートしました！`); document.getElementById('import-textarea').value = '';
-          populateCefrFilter(); renderVocabList(); 
+          populateCefrFilter(); renderVocabList();
           const resultArea = document.getElementById('import-result'), summaryElem = document.getElementById('import-summary'), detailsElem = document.getElementById('import-details');
           resultArea.style.display = 'block'; detailsElem.textContent = '';
           let summaryText = `✅ ${addedCount}件を追加しました。`;
           if (skippedWords.length > 0) summaryText += ` 🔄 ${skippedWords.length}件の重複をスキップ。`;
           if (invalidItems.length > 0) summaryText += ` ⚠️ ${invalidItems.length}件の形式不備をスキップ。`;
           summaryElem.textContent = summaryText;
-          const summarizeList = (arr) => arr.length <= 30 ? arr.join(', ') : arr.slice(0, 30).join(', ') + ` ほか${arr.length - 30}件`;
+          const summarizeList = (arr) => arr.length <= MAX_IMPORT_DETAIL_ITEMS ? arr.join(', ') : arr.slice(0, MAX_IMPORT_DETAIL_ITEMS).join(', ') + ` ほか${arr.length - MAX_IMPORT_DETAIL_ITEMS}件`;
           if (skippedWords.length > 0) { const p = document.createElement('p'); p.innerHTML = `<strong>重複スキップ: </strong>${escapeHTML(summarizeList(skippedWords))}`; detailsElem.appendChild(p); }
           if (invalidItems.length > 0) { const p = document.createElement('p'); p.innerHTML = `<strong>形式不備スキップ: </strong>${escapeHTML(summarizeList(invalidItems))}`; detailsElem.appendChild(p); }
         }
       } catch (e) { showToast('❌ JSONの形式が正しくありません。'); }
     }
-    function exportData() {
+    function exportData(prefix = 'memoria_lite_backup') {
       const data = JSON.stringify(getValidCards(), null, 2), blob = new Blob([data], { type: 'application/json' }), a = document.createElement('a');
       a.href = URL.createObjectURL(blob); const d = new Date();
-      a.download = `memoria_lite_backup_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
-      a.click(); showToast('バックアップをダウンロードしました。');
+      const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
+      a.download = `${prefix}_${stamp}.json`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+      showToast('バックアップをダウンロードしました。');
+    }
+    // 復元バリデーション：何番目が壊れているかを明示する（fix 4）
+    function validateBackupArray(data) {
+      if (!Array.isArray(data)) throw new Error('無効なデータ形式です。JSON配列ではありません。');
+      const invalidIndex = data.findIndex(c =>
+        !c || typeof c !== 'object' || !('word' in c) || !('meaning' in c) ||
+        typeof c.word !== 'string' || typeof c.meaning !== 'string' || c.word.trim() === '' || c.meaning.trim() === ''
+      );
+      if (invalidIndex !== -1) throw new Error(`データが破損しているか、形式が異なります。${invalidIndex + 1}番目のカードに必須項目の問題があります。`);
     }
     function importBackup(e) {
       const file = e.target.files[0]; if (!file) return;
-      if (!confirm('⚠️ 現在のデータは完全に上書きされます。よろしいですか？')) { e.target.value = ''; return; }
+      if (!confirm('⚠️ 現在の学習データはすべて消去され、選択したバックアップで完全に上書きされます。\n本当によろしいですか？')) { e.target.value = ''; return; }
+      // 復元前バックアップの提案（fix 4）
+      if (getCards().length > 0 && confirm('復元前に、現在のデータをバックアップとして保存しますか？')) {
+        exportData('memoria_lite_before_restore');
+      }
       const reader = new FileReader();
       reader.onload = ev => {
         try {
-          const data = JSON.parse(ev.target.result); if (!Array.isArray(data)) throw new Error('配列ではありません');
-          saveCards(normalizeCardsForSave(data)); renderVocabList(); showToast('✅ 復元が完了しました。');
-        } catch (error) { alert('エラー: 正しいバックアップファイルを選択してください。'); }
+          const data = JSON.parse(ev.target.result);
+          validateBackupArray(data); // 不正データは黙って捨てず、明示エラー（fix 4）
+          if (!saveCards(normalizeCardsForSave(data))) return;
+          editingCardId = null;
+          populateCefrFilter(); renderVocabList(); // CEFRフィルタも更新（fix 4）
+          showToast('✅ 復元が完了しました。');
+        } catch (error) { alert(`エラー: ${error.message}\n正しいバックアップJSONファイルを選択してください。`); }
       };
       reader.readAsText(file); e.target.value = '';
     }
