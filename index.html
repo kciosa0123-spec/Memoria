@@ -24,7 +24,6 @@
       --info-border: #BAE6FD;
       --warn-bg: #FEF3C7;
       --warn-border: #FDE68A;
-      /* バッジ用カラー */
       --badge-pos-bg: #E0E7FF; --badge-pos-txt: #3730A3;
       --badge-cefr-bg: #DCFCE7; --badge-cefr-txt: #166534;
       --badge-imp-bg: #FEF3C7; --badge-imp-txt: #92400E;
@@ -44,111 +43,34 @@
         --info-border: #0369A1;
         --warn-bg: #451A03;
         --warn-border: #78350F;
-        /* ダークモード用バッジカラー */
         --badge-pos-bg: #312E81; --badge-pos-txt: #E0E7FF;
         --badge-cefr-bg: #14532D; --badge-cefr-txt: #DCFCE7;
         --badge-imp-bg: #78350F; --badge-imp-txt: #FEF3C7;
       }
-      input, select, textarea {
-        background-color: #374151;
-        color: #F9FAFB;
-        border-color: #4B5563;
-      }
+      input, select, textarea { background-color: #374151; color: #F9FAFB; border-color: #4B5563; }
       .hint-box { background: #374151 !important; }
     }
 
-    /* ==========================================
-       基本スタイル
-       ========================================== */
     * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; line-height: 1.6; transition: background-color 0.3s, color 0.3s; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text-main);
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      line-height: 1.6;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    /* ==========================================
-       ナビゲーション & レイアウト
-       ========================================== */
-    nav {
-      width: 100%;
-      background-color: var(--primary);
-      padding: 10px 0;
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    nav button {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      padding: 7px 12px;
-      border-radius: 7px;
-      font-weight: 700;
-      transition: background-color 0.2s;
-    }
+    /* ナビゲーション */
+    nav { width: 100%; background-color: var(--primary); padding: 10px 0; display: flex; justify-content: center; gap: 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    nav button { background: none; border: none; color: white; font-size: 16px; cursor: pointer; padding: 7px 12px; border-radius: 7px; font-weight: 700; transition: background-color 0.2s; }
     nav button:hover, nav button.active-nav { background-color: var(--primary-hover); }
 
-    .container {
-      width: 92%;
-      max-width: 680px;
-      margin-top: 22px;
-      margin-bottom: 60px;
-    }
+    .container { width: 92%; max-width: 680px; margin-top: 22px; margin-bottom: 60px; }
 
-    /* タブ切り替えのスムーズなアニメーション */
-    .tab-content { 
-      display: none; 
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    .tab-content.active { 
-      display: block; 
-      opacity: 1;
-      animation: fadeIn 0.3s forwards;
-    }
+    /* タブの表示切替（透明になるバグを修正） */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    .panel {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px;
-      margin-bottom: 18px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.04);
-    }
-    .info-panel {
-      background: var(--info-bg);
-      border: 1px solid var(--info-border);
-    }
+    .panel { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
+    .info-panel { background: var(--info-bg); border: 1px solid var(--info-border); }
 
-    /* ==========================================
-       ボタン・UIコンポーネント
-       ========================================== */
-    .btn {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: bold;
-      color: white;
-      transition: opacity 0.15s, transform 0.05s;
-    }
+    /* ボタン・統計など */
+    .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; color: white; transition: opacity 0.15s, transform 0.05s; }
     .btn:hover { opacity: 0.88; }
     .btn:active { transform: translateY(1px); }
     .btn-primary { background-color: var(--primary); }
@@ -157,260 +79,59 @@
     .btn-danger { background-color: var(--danger); }
     .btn-muted { background-color: var(--muted); }
 
-    /* ==========================================
-       ダッシュボード統計
-       ========================================== */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-    .stat-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      text-align: center;
-    }
-    .stat-number {
-      font-size: 26px;
-      font-weight: 800;
-      color: var(--primary);
-      line-height: 1.2;
-    }
-    .stat-label {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-    .mode-button {
-      width: 100%;
-      padding: 18px;
-      font-size: 17px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-    .mode-count {
-      background: rgba(255,255,255,0.22);
-      padding: 3px 9px;
-      border-radius: 999px;
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    /* ==========================================
-       優しい記録システム (ヒートマップ等)
-       ========================================== */
-    .heatmap-cell {
-      width: 14px;
-      height: 14px;
-      border-radius: 3px;
-      background-color: var(--border);
-      flex-shrink: 0;
-      position: relative;
-    }
-    .heatmap-cell.level-1 { background-color: #A7F3D0; } 
-    .heatmap-cell.level-2 { background-color: #34D399; } 
-    .heatmap-cell.level-3 { background-color: #059669; } 
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 18px; }
+    .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+    .stat-number { font-size: 26px; font-weight: 800; color: var(--primary); line-height: 1.2; }
+    .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
     
-    @media (prefers-color-scheme: dark) {
-      .heatmap-cell.level-1 { background-color: #065F46; }
-      .heatmap-cell.level-2 { background-color: #047857; }
-      .heatmap-cell.level-3 { background-color: #10B981; }
-    }
+    .mode-button { width: 100%; padding: 18px; font-size: 17px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .mode-count { background: rgba(255,255,255,0.22); padding: 3px 9px; border-radius: 999px; font-size: 13px; white-space: nowrap; }
 
-    .heatmap-cell[data-tooltip]:hover::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: calc(100% + 4px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.8);
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      white-space: nowrap;
-      pointer-events: none;
-      z-index: 10;
-    }
+    /* ヒートマップ */
+    .heatmap-cell { width: 14px; height: 14px; border-radius: 3px; background-color: var(--border); flex-shrink: 0; position: relative; }
+    .heatmap-cell.level-1 { background-color: #A7F3D0; } .heatmap-cell.level-2 { background-color: #34D399; } .heatmap-cell.level-3 { background-color: #059669; } 
+    @media (prefers-color-scheme: dark) { .heatmap-cell.level-1 { background-color: #065F46; } .heatmap-cell.level-2 { background-color: #047857; } .heatmap-cell.level-3 { background-color: #10B981; } }
+    .heatmap-cell[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; pointer-events: none; z-index: 10; }
 
-    /* ==========================================
-       フラッシュカード学習UI
-       ========================================== */
-    .flashcard {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 28px;
-      text-align: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-      margin-bottom: 20px;
-    }
-    .word-title {
-      font-size: 34px;
-      font-weight: 800;
-      margin-bottom: 8px;
-      word-break: break-word;
-    }
-    .badge-row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 18px;
-    }
-    .badge {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 3px 9px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    .badge.pos { background: var(--badge-pos-bg); color: var(--badge-pos-txt); }
-    .badge.cefr { background: var(--badge-cefr-bg); color: var(--badge-cefr-txt); }
-    .badge.importance { background: var(--badge-imp-bg); color: var(--badge-imp-txt); }
-
-    .meaning-text {
-      font-size: 21px;
-      color: var(--primary);
-      font-weight: 800;
-      margin-bottom: 15px;
-    }
-    .example-text {
-      font-size: 16px;
-      color: var(--text-muted);
-      font-style: italic;
-      word-break: break-word;
-    }
-    .hint-box {
-      background: #F3F4F6;
-      border-radius: 10px;
-      padding: 12px;
-      margin: 12px 0 20px;
-      min-height: 44px;
-    }
-
-    /* アニメーション付き回答表示 */
+    /* フラッシュカードUI */
+    .flashcard { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 28px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .word-title { font-size: 34px; font-weight: 800; margin-bottom: 8px; word-break: break-word; }
+    .badge-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 18px; }
+    .badge { display: inline-block; border-radius: 999px; padding: 3px 9px; font-size: 12px; font-weight: 700; }
+    .badge.pos { background: var(--badge-pos-bg); color: var(--badge-pos-txt); } .badge.cefr { background: var(--badge-cefr-bg); color: var(--badge-cefr-txt); } .badge.importance { background: var(--badge-imp-bg); color: var(--badge-imp-txt); }
+    .meaning-text { font-size: 21px; color: var(--primary); font-weight: 800; margin-bottom: 15px; }
+    .example-text { font-size: 16px; color: var(--text-muted); font-style: italic; word-break: break-word; }
+    .hint-box { background: #F3F4F6; border-radius: 10px; padding: 12px; margin: 12px 0 20px; min-height: 44px; }
     .card-back-hidden { display: none; }
-    .card-back-visible {
-      display: block;
-      animation: slideDownFade 0.3s ease-out forwards;
-    }
-    @keyframes slideDownFade {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .card-back-visible { display: block; animation: slideDownFade 0.3s ease-out forwards; }
+    @keyframes slideDownFade { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .eval-buttons { display: none; justify-content: space-between; gap: 8px; }
+    .btn-eval { flex: 1; padding: 14px 4px; font-size: 15px; min-width: 0; }
 
-    .eval-buttons {
-      display: none;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .btn-eval {
-      flex: 1;
-      padding: 14px 4px;
-      font-size: 15px;
-      min-width: 0;
-    }
+    /* トースト通知 */
+    #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; pointer-events: none; }
+    .toast { background: rgba(17, 24, 39, 0.9); color: #F9FAFB; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 14px; font-weight: 600; opacity: 0; transform: translateY(20px); animation: toastEnter 0.3s forwards, toastLeave 0.3s forwards 2.7s; }
+    @media (prefers-color-scheme: dark) { .toast { background: rgba(249, 250, 251, 0.9); color: #111827; } }
+    @keyframes toastEnter { to { opacity: 1; transform: translateY(0); } } @keyframes toastLeave { to { opacity: 0; transform: translateY(20px); } }
 
-    /* ==========================================
-       トースト通知 (Snackbar)
-       ========================================== */
-    #toast-container {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 9999;
-      pointer-events: none;
-    }
-    .toast {
-      background: rgba(17, 24, 39, 0.9);
-      color: #F9FAFB;
-      padding: 12px 24px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      font-size: 14px;
-      font-weight: 600;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: toastEnter 0.3s forwards, toastLeave 0.3s forwards 2.7s;
-    }
-    @media (prefers-color-scheme: dark) {
-      .toast { background: rgba(249, 250, 251, 0.9); color: #111827; }
-    }
-    @keyframes toastEnter { to { opacity: 1; transform: translateY(0); } }
-    @keyframes toastLeave { to { opacity: 0; transform: translateY(20px); } }
-
-    /* ==========================================
-       リスト・インポートUI
-       ========================================== */
-    textarea {
-      width: 100%; height: 210px; padding: 12px;
-      border-radius: 8px; border: 1px solid var(--border);
-      box-sizing: border-box; margin-bottom: 10px;
-      font-family: ui-monospace, SFMono-Regular, monospace;
-      font-size: 13px; resize: vertical;
-    }
-    input, select {
-      padding: 9px 10px; border: 1px solid var(--border);
-      border-radius: 8px; font-size: 14px;
-    }
-    .filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
-    .filters .filter-search { grid-column: 1 / -1; }
+    /* リスト管理・その他UI */
+    textarea { width: 100%; height: 210px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; margin-bottom: 10px; font-family: ui-monospace, monospace; font-size: 13px; resize: vertical; }
+    input, select { padding: 9px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+    .filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; } .filters .filter-search { grid-column: 1 / -1; }
     ul { list-style: none; padding: 0; margin: 0; }
-    
-    li.word-item {
-      background: var(--card-bg);
-      margin-bottom: 9px; padding: 14px;
-      border-radius: 10px; border: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
-    }
-    .word-main { min-width: 0; flex: 1; }
-    .word-head { font-size: 17px; font-weight: 800; word-break: break-word; }
-    .word-meaning { margin-top: 3px; word-break: break-word; }
-    .list-info { font-size: 12px; color: var(--text-muted); display: block; margin-top: 6px; }
-    .word-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
-    .word-actions .btn { padding: 6px 10px; white-space: nowrap; }
-    
-    .edit-form { width: 100%; }
-    .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-    .edit-grid label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--text-muted); font-weight: 700; }
-    .edit-grid label.full { grid-column: 1 / -1; }
-    .edit-grid textarea { height: 72px; margin-bottom: 0; font-family: inherit; font-size: 14px; }
-    .edit-actions { display: flex; gap: 8px; margin-top: 10px; }
-    .edit-actions .btn { flex: 1; }
-
-    .small-note { font-size: 13px; color: var(--text-muted); }
-    .storage-note { padding: 8px 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--info-border); margin: 10px 0; }
-    .storage-note.warning { background: var(--warn-bg); border-color: var(--warn-border); color: #92400E; font-weight: 700; }
-    
-    .result-box { display: none; margin-top: 18px; padding: 15px; border-radius: 10px; background-color: var(--info-bg); border: 1px solid var(--info-border); }
-    .result-box h4 { margin-top: 0; margin-bottom: 8px; color: #0284C7; }
+    li.word-item { background: var(--card-bg); margin-bottom: 9px; padding: 14px; border-radius: 10px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .word-main { min-width: 0; flex: 1; } .word-head { font-size: 17px; font-weight: 800; word-break: break-word; } .word-meaning { margin-top: 3px; word-break: break-word; }
+    .list-info { font-size: 12px; color: var(--text-muted); display: block; margin-top: 6px; } .word-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; } .word-actions .btn { padding: 6px 10px; white-space: nowrap; }
+    .edit-form { width: 100%; } .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; } .edit-grid label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--text-muted); font-weight: 700; }
+    .edit-grid label.full { grid-column: 1 / -1; } .edit-grid textarea { height: 72px; margin-bottom: 0; font-family: inherit; font-size: 14px; } .edit-actions { display: flex; gap: 8px; margin-top: 10px; } .edit-actions .btn { flex: 1; }
+    .small-note { font-size: 13px; color: var(--text-muted); } .storage-note { padding: 8px 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--info-border); margin: 10px 0; } .storage-note.warning { background: var(--warn-bg); border-color: var(--warn-border); color: #92400E; font-weight: 700; }
+    .result-box { display: none; margin-top: 18px; padding: 15px; border-radius: 10px; background-color: var(--info-bg); border: 1px solid var(--info-border); } .result-box h4 { margin-top: 0; margin-bottom: 8px; color: #0284C7; }
     pre { background: #111827; color: #E5E7EB; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 12px; }
 
-    /* ==========================================
-       モバイル対応
-       ========================================== */
     @media (max-width: 560px) {
-      nav { gap: 4px; }
-      nav button { font-size: 14px; padding: 7px 8px; }
-      .container { width: 94%; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .filters { grid-template-columns: 1fr; }
-      .eval-buttons { flex-direction: column; }
-      .btn-eval { width: 100%; min-height: 64px; } 
-      li.word-item { flex-direction: column; }
-      .word-actions { width: 100%; flex-direction: row; }
-      .word-actions .btn { flex: 1; }
-      .edit-grid { grid-template-columns: 1fr; }
+      nav { gap: 4px; } nav button { font-size: 14px; padding: 7px 8px; } .container { width: 94%; } .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .filters { grid-template-columns: 1fr; } .eval-buttons { flex-direction: column; } .btn-eval { width: 100%; min-height: 64px; } 
+      li.word-item { flex-direction: column; } .word-actions { width: 100%; flex-direction: row; } .word-actions .btn { flex: 1; } .edit-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -422,7 +143,6 @@
     <button id="nav-import" onclick="switchTab('tab-import')">➕ 追加</button>
   </nav>
 
-  <!-- トースト通知用コンテナ -->
   <div id="toast-container"></div>
 
   <div class="container">
@@ -430,34 +150,18 @@
     <!-- 🏠 ホームダッシュボード -->
     <div id="tab-dashboard" class="tab-content active">
       <h2 style="text-align: center;">Memoria Lite</h2>
-
-      <!-- 統計グリッド -->
       <div class="stats-grid">
-        <div class="stat-card">
-          <div id="stat-total" class="stat-number">0</div>
-          <div class="stat-label">登録総数</div>
-        </div>
-        <div class="stat-card">
-          <div id="stat-review" class="stat-number">0</div>
-          <div class="stat-label">今日の復習</div>
-        </div>
-        <div class="stat-card">
-          <div id="stat-new" class="stat-number">0</div>
-          <div class="stat-label">未学習</div>
-        </div>
-        <div class="stat-card">
-          <div id="stat-weak" class="stat-number">0</div>
-          <div class="stat-label">苦手候補</div>
-        </div>
+        <div class="stat-card"><div id="stat-total" class="stat-number">0</div><div class="stat-label">登録総数</div></div>
+        <div class="stat-card"><div id="stat-review" class="stat-number">0</div><div class="stat-label">今日の復習</div></div>
+        <div class="stat-card"><div id="stat-new" class="stat-number">0</div><div class="stat-label">未学習</div></div>
+        <div class="stat-card"><div id="stat-weak" class="stat-number">0</div><div class="stat-label">苦手候補</div></div>
       </div>
 
-      <!-- 🌱 優しい記録システム (ウィークリー＆ヒートマップ) -->
       <div class="panel">
         <h3 style="margin-top: 0; display: flex; justify-content: space-between; align-items: center;">
           🌱 学習のきろく
           <button onclick="changeWeeklyGoal()" class="btn btn-muted" style="padding: 4px 8px; font-size: 12px;">🎯 目標設定</button>
         </h3>
-        
         <div style="margin-bottom: 15px;">
           <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-bottom: 4px;">
             <span style="color: var(--text-muted);">今週の目標（月〜日）</span>
@@ -467,33 +171,23 @@
             <div id="weekly-progress-bar" style="width: 0%; height: 100%; background-color: var(--secondary); transition: width 0.3s ease;"></div>
           </div>
         </div>
-
         <p class="small-note" style="margin-bottom: 4px;">直近4週間の活動</p>
-        <div id="heatmap-container" style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px;">
-          <!-- JSで自動生成 -->
-        </div>
+        <div id="heatmap-container" style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px;"></div>
       </div>
 
-      <!-- 学習開始パネル -->
       <div class="panel">
         <h3 style="margin-top: 0; text-align: center;">学習を始める</h3>
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <button onclick="startLearningMode('review')" class="btn btn-primary mode-button">
-            <span>📅 今日の復習を開始する</span>
-            <span id="btn-count-review" class="mode-count">0件</span>
+            <span>📅 今日の復習を開始する</span><span id="btn-count-review" class="mode-count">0件</span>
           </button>
           <button onclick="startLearningMode('new')" class="btn btn-secondary mode-button">
-            <span>✨ 新しく覚える</span>
-            <span id="btn-count-new" class="mode-count">最大10件</span>
+            <span>✨ 新しく覚える</span><span id="btn-count-new" class="mode-count">最大10件</span>
           </button>
           <button onclick="startLearningMode('weak')" class="btn btn-warning mode-button">
-            <span>💪 苦手な単語を特訓する</span>
-            <span id="btn-count-weak" class="mode-count">0件</span>
+            <span>💪 苦手な単語を特訓する</span><span id="btn-count-weak" class="mode-count">0件</span>
           </button>
         </div>
-        <p class="small-note" style="margin-bottom: 0;">
-          学習画面では Space で答え表示、1〜4 で評価できます。「忘れた」を押した単語は、セッション最後にもう一度出ます。
-        </p>
       </div>
     </div>
 
@@ -511,14 +205,9 @@
           <span class="badge cefr" id="card-cefr"></span>
           <span class="badge importance" id="card-importance"></span>
         </div>
-
-        <div class="hint-box">
-          <div class="example-text" id="card-hint"></div>
-        </div>
-
+        <div class="hint-box"><div class="example-text" id="card-hint"></div></div>
         <button onclick="speakWord()" class="btn" style="background: var(--border); color: var(--text-main); margin-bottom: 20px;">🔊 発音</button>
-
-        <!-- アニメーション付きで表示される裏面 -->
+        
         <div id="card-back" class="card-back-hidden">
           <hr style="border-top: 1px solid var(--border); margin: 20px 0;">
           <div class="meaning-text" id="card-meaning"></div>
@@ -541,7 +230,6 @@
     <!-- 📋 単語管理 -->
     <div id="tab-list" class="tab-content">
       <h2>単語リストとデータ管理</h2>
-
       <div class="panel info-panel">
         <h3 style="margin-top: 0;">💾 バックアップと復元</h3>
         <p class="small-note">PC移行やデータ消失に備えて定期的に保存してください。Lite版は軽量運用向けのため、1,000〜2,000語程度までの利用を推奨します。</p>
@@ -554,31 +242,15 @@
       <div class="panel">
         <h3 style="margin-top: 0;">登録済み単語 <span id="total-words">0</span>件</h3>
         <div class="filters">
-          <input type="search" id="search-input" class="filter-search" placeholder="単語・意味で検索" oninput="renderVocabList()">
-          <select id="status-filter" onchange="renderVocabList()">
-            <option value="all">全状態</option>
-            <option value="new">new</option>
-            <option value="learning">learning</option>
-            <option value="review">review</option>
-          </select>
-          <select id="cefr-filter" onchange="renderVocabList()">
-            <option value="all">全CEFR</option>
-          </select>
-          <select id="importance-filter" onchange="renderVocabList()">
-            <option value="all">全重要度</option>
-            <option value="5">重要度 5</option>
-            <option value="4">重要度 4</option>
-            <option value="3">重要度 3</option>
-            <option value="2">重要度 2</option>
-            <option value="1">重要度 1</option>
-          </select>
+          <input type="search" id="search-input" class="filter-search" placeholder="単語・意味・例文で検索" oninput="renderVocabList()">
+          <select id="status-filter" onchange="renderVocabList()"><option value="all">全状態</option><option value="new">new</option><option value="learning">learning</option><option value="review">review</option></select>
+          <select id="cefr-filter" onchange="renderVocabList()"><option value="all">全CEFR</option></select>
+          <select id="importance-filter" onchange="renderVocabList()"><option value="all">全重要度</option><option value="5">重要度 5</option><option value="4">重要度 4</option><option value="3">重要度 3</option><option value="2">重要度 2</option><option value="1">重要度 1</option></select>
         </div>
         
-        <!-- 一括操作バー -->
         <div id="bulk-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
           <label style="display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px; cursor: pointer; color: var(--text-main);">
-            <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)" style="width: 16px; height: 16px; cursor: pointer;">
-            全て選択
+            <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)" style="width: 16px; height: 16px; cursor: pointer;"> 全て選択
           </label>
           <button onclick="deleteSelectedCards()" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">🗑️ 選択した単語を削除</button>
         </div>
@@ -591,33 +263,13 @@
     <div id="tab-import" class="tab-content">
       <h2>AIから単語をインポート</h2>
       <div class="panel">
-        <p class="small-note">
-          AIに出力させたJSON配列を貼り付けてください。コードフェンス付きの出力も、できる範囲で自動抽出します。
-        </p>
         <textarea id="import-textarea" placeholder="ここにAIが出力したJSON配列を貼り付けてください。"></textarea>
         <button onclick="handleImport()" class="btn btn-secondary" style="width: 100%; padding: 15px;">インポートを実行</button>
-
         <div id="import-result" class="result-box">
           <h4>インポート結果</h4>
           <p id="import-summary" style="font-weight: bold; margin-bottom: 10px; color: var(--text-main);"></p>
           <div id="import-details" style="font-size: 14px; color: var(--text-muted);"></div>
         </div>
-      </div>
-
-      <div class="panel">
-        <h3 style="margin-top: 0;">サンプルJSON</h3>
-        <button onclick="copySampleJson()" class="btn btn-muted" style="margin-bottom: 10px;">📋 サンプルをコピー</button>
-        <pre id="sample-json-code">[
-  {
-    "word": "paradigm",
-    "meaning": "パラダイム、理論的枠組み",
-    "pos": "noun",
-    "cefr": "C2",
-    "importance": 5,
-    "example": "The discovery caused a paradigm shift in modern physics.",
-    "example_masked": "The discovery caused a ______ shift in modern physics."
-  }
-]</pre>
       </div>
     </div>
 
@@ -625,7 +277,7 @@
 
   <script>
     // ==========================================
-    // 基本設定・トースト通知
+    // 基本設定・トースト通知・安全対策
     // ==========================================
     const STORAGE_KEY = 'my_vocab_cards';
     const ACTIVITY_STORAGE_KEY = 'my_vocab_activity';
@@ -634,7 +286,6 @@
     const STORAGE_SCHEMA_VERSION_KEY = 'my_vocab_schema_version';
     const CURRENT_SCHEMA_VERSION = '2';
     const LOCAL_STORAGE_LIMIT_BYTES = 5 * 1024 * 1024;
-    const MAX_IMPORT_DETAIL_ITEMS = 30;
     const MAX_EFACTOR = 3.0;
 
     let learningQueue = [];
@@ -645,14 +296,17 @@
     let sessionRequeuedCount = 0;
     let isEvaluating = false;
 
-    // ネイティブアプリ風のトースト通知
     function showToast(message, duration = 3000) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = message;
+      toast.className = 'toast'; toast.textContent = message;
       container.appendChild(toast);
       setTimeout(() => toast.remove(), duration + 500);
+    }
+
+    // HTMLインジェクション（画面破壊）を防ぐエスケープ処理
+    function escapeHTML(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     // ==========================================
@@ -665,21 +319,13 @@
     function normalizePos(value) { return (typeof value === 'string' ? value.trim().toLowerCase() : '') || 'unknown'; }
     function normalizeCefr(value) {
       if (typeof value !== 'string') return 'Unknown';
-      const raw = value.trim();
-      if (!raw) return 'Unknown';
-      const upper = raw.toUpperCase();
-      if (['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(upper)) return upper;
-      const lower = raw.toLowerCase();
-      if (lower === 'academic') return 'Academic';
-      if (lower === 'technical') return 'Technical';
+      const raw = value.trim(); if (!raw) return 'Unknown';
+      const upper = raw.toUpperCase(); if (['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(upper)) return upper;
+      const lower = raw.toLowerCase(); if (lower === 'academic') return 'Academic'; if (lower === 'technical') return 'Technical';
       if (lower === 'unknown') return 'Unknown';
       return raw;
     }
-    function normalizeStatus(status, repetition) {
-      const allowed = ['new', 'learning', 'review'];
-      if (allowed.includes(status)) return status;
-      return repetition === 0 ? 'new' : 'review';
-    }
+    function normalizeStatus(status, repetition) { const allowed = ['new', 'learning', 'review']; return allowed.includes(status) ? status : (repetition === 0 ? 'new' : 'review'); }
     function normalizeDate(value) {
       if (!value) return new Date().getTime();
       if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -712,7 +358,6 @@
       activityData[today] = (activityData[today] || 0) + 1;
       localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(activityData));
     }
-
     function changeWeeklyGoal() {
       const currentGoal = localStorage.getItem(WEEKLY_GOAL_KEY) || '100';
       const input = prompt('今週の目標学習枚数を入力してください（例: 100）', currentGoal);
@@ -720,57 +365,36 @@
         const newGoal = parseInt(input, 10);
         if (!isNaN(newGoal) && newGoal > 0) {
           localStorage.setItem(WEEKLY_GOAL_KEY, newGoal.toString());
-          renderActivityStats();
-          showToast(`週の目標を ${newGoal} 枚に設定しました。`);
-        } else {
-          showToast('正しい数値を入力してください。');
-        }
+          renderActivityStats(); showToast(`週の目標を ${newGoal} 枚に設定しました。`);
+        } else { showToast('正しい数値を入力してください。'); }
       }
     }
-
     function getWeeklyTotal(activityData) {
-      let total = 0;
-      const now = new Date();
-      const dayOfWeek = now.getDay(); 
-      const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-
+      let total = 0; const now = new Date();
+      const daysSinceMonday = now.getDay() === 0 ? 6 : now.getDay() - 1;
       for (let i = 0; i <= daysSinceMonday; i++) {
-        const d = new Date();
-        d.setDate(now.getDate() - i);
+        const d = new Date(); d.setDate(now.getDate() - i);
         const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         total += (activityData[dateStr] || 0);
       }
       return total;
     }
-
     function renderActivityStats() {
-      const container = document.getElementById('heatmap-container');
-      if (!container) return;
-      
+      const container = document.getElementById('heatmap-container'); if (!container) return;
       const activityData = JSON.parse(localStorage.getItem(ACTIVITY_STORAGE_KEY) || '{}');
       const weeklyGoal = parseInt(localStorage.getItem(WEEKLY_GOAL_KEY) || '100', 10);
-      
       const weeklyTotal = getWeeklyTotal(activityData);
       const progressPercent = Math.min(100, Math.round((weeklyTotal / weeklyGoal) * 100));
-      
       document.getElementById('weekly-progress-text').textContent = `${weeklyTotal} / ${weeklyGoal} 枚`;
       document.getElementById('weekly-progress-bar').style.width = `${progressPercent}%`;
 
       container.innerHTML = '';
       for (let i = 27; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
+        const d = new Date(); d.setDate(d.getDate() - i);
         const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        
         const count = activityData[dateStr] || 0;
-        const cell = document.createElement('div');
-        cell.className = 'heatmap-cell';
-        cell.setAttribute('data-tooltip', `${dateStr}: ${count}枚`);
-        
-        if (count > 30) cell.classList.add('level-3');
-        else if (count > 10) cell.classList.add('level-2');
-        else if (count > 0) cell.classList.add('level-1');
-        
+        const cell = document.createElement('div'); cell.className = 'heatmap-cell'; cell.setAttribute('data-tooltip', `${dateStr}: ${count}枚`);
+        if (count > 30) cell.classList.add('level-3'); else if (count > 10) cell.classList.add('level-2'); else if (count > 0) cell.classList.add('level-1');
         container.appendChild(cell);
       }
       container.scrollLeft = container.scrollWidth;
@@ -780,151 +404,87 @@
     // データ読み書き・正規化
     // ==========================================
     function getCards() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch (error) {
-        showToast('保存データの読み込みに失敗しました。');
-        return [];
-      }
+      try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
     }
-
     function getValidCards() {
-      return getCards().filter(card => card && typeof card === 'object' && typeof card.word === 'string' && typeof card.meaning === 'string' && card.word.trim() !== '' && card.meaning.trim() !== '');
+      return getCards().filter(c => c && typeof c === 'object' && typeof c.word === 'string' && typeof c.meaning === 'string' && c.word.trim() !== '' && c.meaning.trim() !== '');
     }
-
     function saveCards(cards, options = {}) {
-      const { warnNearLimit = true, normalizeBeforeSave = true } = options;
-      const cardsToSave = normalizeBeforeSave ? normalizeCardsForSave(cards) : cards;
-      
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cardsToSave));
-      } catch (error) {
-        alert('⚠️ 容量上限エラー\nデータの保存に失敗しました。不要な単語を削除してください。');
-        return false;
-      }
-
-      updateDashboard();
-      updateStorageUsageDisplay();
-      if (warnNearLimit) warnIfStorageNearLimit();
+      const cardsToSave = options.normalizeBeforeSave !== false ? normalizeCardsForSave(cards) : cards;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cardsToSave)); } catch (e) { alert('⚠️ 容量上限エラー\n保存に失敗しました。'); return false; }
+      updateDashboard(); updateStorageUsageDisplay();
       return true;
     }
-
-    function normalizeCard(card) {
-      const source = card && typeof card === 'object' ? card : {};
-      const repetition = Math.max(0, Math.round(safeNumber(source.repetition, 0)));
+    function normalizeCard(c) {
+      const source = c || {}; const repetition = Math.max(0, Math.round(safeNumber(source.repetition, 0)));
       return {
         id: source.id ? String(source.id) : generateId(),
-        word: String(source.word || '').trim(),
-        meaning: String(source.meaning || '').trim(),
-        pos: normalizePos(source.pos),
-        cefr: normalizeCefr(source.cefr),
-        importance: normalizeImportance(source.importance),
-        example: String(source.example || '').trim(),
-        example_masked: String(source.example_masked || '').trim(),
-        status: normalizeStatus(source.status, repetition),
-        repetition: repetition,
-        interval: Math.max(0, Math.round(safeNumber(source.interval, 0))),
-        efactor: Math.max(1.3, safeNumber(source.efactor, 2.5)),
-        lapses: Math.max(0, Math.round(safeNumber(source.lapses, 0))),
-        nextReviewDate: normalizeDate(source.nextReviewDate),
-        createdAt: normalizeDate(source.createdAt || new Date().getTime())
+        word: String(source.word || '').trim(), meaning: String(source.meaning || '').trim(),
+        pos: normalizePos(source.pos), cefr: normalizeCefr(source.cefr), importance: normalizeImportance(source.importance),
+        example: String(source.example || '').trim(), example_masked: String(source.example_masked || '').trim(),
+        status: normalizeStatus(source.status, repetition), repetition: repetition,
+        interval: Math.max(0, Math.round(safeNumber(source.interval, 0))), efactor: Math.max(1.3, safeNumber(source.efactor, 2.5)),
+        lapses: Math.max(0, Math.round(safeNumber(source.lapses, 0))), nextReviewDate: normalizeDate(source.nextReviewDate), createdAt: normalizeDate(source.createdAt || new Date().getTime())
       };
     }
-
-    function normalizeCardsForSave(cards) {
-      return (Array.isArray(cards) ? cards : []).map(normalizeCard).filter(c => c.word && c.meaning);
-    }
-
+    function normalizeCardsForSave(cards) { return (Array.isArray(cards) ? cards : []).map(normalizeCard).filter(c => c.word && c.meaning); }
     function migrateExistingCards() {
-      const currentVersion = localStorage.getItem(STORAGE_SCHEMA_VERSION_KEY);
-      if (currentVersion === CURRENT_SCHEMA_VERSION) return;
-      const cards = getCards();
-      if (cards.length > 0) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeCardsForSave(cards)));
-      }
+      if (localStorage.getItem(STORAGE_SCHEMA_VERSION_KEY) === CURRENT_SCHEMA_VERSION) return;
+      const cards = getCards(); if (cards.length > 0) localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeCardsForSave(cards)));
       localStorage.setItem(STORAGE_SCHEMA_VERSION_KEY, CURRENT_SCHEMA_VERSION);
     }
-
-    function makeDuplicateKey(card) {
-      return [String(card.word).toLowerCase().trim(), String(card.pos).toLowerCase().trim(), String(card.meaning).toLowerCase().trim()].join('::');
-    }
-
+    function makeDuplicateKey(c) { return [String(c.word).toLowerCase().trim(), String(c.pos).toLowerCase().trim(), String(c.meaning).toLowerCase().trim()].join('::'); }
     function getStorageUsageInfo() {
-      const text = localStorage.getItem(STORAGE_KEY) || '';
-      const bytes = new Blob([text]).size;
+      const bytes = new Blob([localStorage.getItem(STORAGE_KEY) || '']).size;
       return { bytes, mb: Math.round((bytes / 1024 / 1024) * 100) / 100, percent: Math.round((bytes / LOCAL_STORAGE_LIMIT_BYTES) * 100) };
     }
-
     function updateStorageUsageDisplay() {
-      const elem = document.getElementById('storage-usage');
-      if (!elem) return;
+      const elem = document.getElementById('storage-usage'); if (!elem) return;
       const info = getStorageUsageInfo();
-      elem.textContent = `保存容量: 約${info.mb}MB / 5MB目安（${info.percent}%）`;
-      elem.classList.toggle('warning', info.percent >= 80);
-    }
-
-    function warnIfStorageNearLimit() {
-      const info = getStorageUsageInfo();
-      if (info.percent < 80) return;
-      const today = todayStamp();
-      if (localStorage.getItem(STORAGE_WARNING_DATE_KEY) === today) return;
-      localStorage.setItem(STORAGE_WARNING_DATE_KEY, today);
-      showToast(`⚠️ 容量が限界に近づいています（${info.percent}%）。整理を検討してください。`);
+      elem.textContent = `保存容量: 約${info.mb}MB / 5MB目安（${info.percent}%）`; elem.classList.toggle('warning', info.percent >= 80);
     }
 
     // ==========================================
-    // 初期化・タブ切り替え
+    // 初期化・タブ切り替え (フェイルセーフ対応)
     // ==========================================
     window.onload = () => {
-      migrateExistingCards();
-      populateCefrFilter();
-      renderVocabList();
-      updateDashboard();
-      updateStorageUsageDisplay();
-      if ('speechSynthesis' in window) speechSynthesis.getVoices();
+      try {
+        migrateExistingCards(); populateCefrFilter(); renderVocabList(); updateDashboard(); updateStorageUsageDisplay();
+        if ('speechSynthesis' in window) speechSynthesis.getVoices();
+      } catch (e) {
+        console.error("初期化エラー:", e);
+      }
     };
 
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-nav'));
-      
-      const navBtn = document.getElementById(`nav-${tabId.replace('tab-', '')}`);
-      if (navBtn) navBtn.classList.add('active-nav');
+      try {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-nav'));
+        const navBtn = document.getElementById(`nav-${tabId.replace('tab-', '')}`);
+        if (navBtn) navBtn.classList.add('active-nav');
 
-      if (tabId === 'tab-dashboard') updateDashboard();
-      if (tabId === 'tab-list') { populateCefrFilter(); renderVocabList(); updateStorageUsageDisplay(); }
-      if (tabId === 'tab-import') document.getElementById('import-result').style.display = 'none';
+        if (tabId === 'tab-dashboard') updateDashboard();
+        if (tabId === 'tab-list') { populateCefrFilter(); renderVocabList(); updateStorageUsageDisplay(); }
+        if (tabId === 'tab-import') document.getElementById('import-result').style.display = 'none';
+      } catch (e) {
+        console.error("タブ切り替えエラー:", e);
+        alert("画面の切り替え中にエラーが発生しました。\n再読み込みをお試しください。");
+      }
     }
 
     // ==========================================
     // 統計・ホーム画面
     // ==========================================
-    function isReviewDue(card, now) { return card.status !== 'new' && getReviewTime(card) <= now; }
-    function isNewCard(card) { return card.status === 'new'; }
-    function isWeakCard(card) { return card.status === 'learning' || (card.lapses || 0) >= 2 || (card.efactor !== undefined && card.efactor < 2.0); }
-
-    function getStats() {
-      const cards = getValidCards();
-      const now = new Date().getTime();
-      return {
-        total: cards.length,
-        review: cards.filter(card => isReviewDue(card, now)).length,
-        newCount: cards.filter(isNewCard).length,
-        weak: cards.filter(isWeakCard).length
-      };
-    }
-
+    function isReviewDue(c, now) { return c.status !== 'new' && getReviewTime(c) <= now; }
+    function isNewCard(c) { return c.status === 'new'; }
+    function isWeakCard(c) { return c.status === 'learning' || (c.lapses || 0) >= 2 || (c.efactor !== undefined && c.efactor < 2.0); }
     function updateDashboard() {
-      const stats = getStats();
-      document.getElementById('stat-total').textContent = stats.total;
-      document.getElementById('stat-review').textContent = stats.review;
-      document.getElementById('stat-new').textContent = stats.newCount;
-      document.getElementById('stat-weak').textContent = stats.weak;
-      document.getElementById('btn-count-review').textContent = `${stats.review}件`;
-      document.getElementById('btn-count-new').textContent = `${Math.min(10, stats.newCount)} / ${stats.newCount}件`;
+      const cards = getValidCards(), now = new Date().getTime();
+      const stats = { total: cards.length, review: cards.filter(c => isReviewDue(c, now)).length, newCount: cards.filter(isNewCard).length, weak: cards.filter(isWeakCard).length };
+      document.getElementById('stat-total').textContent = stats.total; document.getElementById('stat-review').textContent = stats.review;
+      document.getElementById('stat-new').textContent = stats.newCount; document.getElementById('stat-weak').textContent = stats.weak;
+      document.getElementById('btn-count-review').textContent = `${stats.review}件`; document.getElementById('btn-count-new').textContent = `${Math.min(10, stats.newCount)} / ${stats.newCount}件`;
       document.getElementById('btn-count-weak').textContent = `${stats.weak}件`;
       renderActivityStats();
     }
@@ -933,235 +493,95 @@
     // 学習モード
     // ==========================================
     function startLearningMode(mode) {
-      const allCards = getValidCards();
-      const now = new Date().getTime();
-
+      const allCards = getValidCards(), now = new Date().getTime();
       if (mode === 'review') learningQueue = allCards.filter(c => isReviewDue(c, now)).sort((a, b) => getReviewTime(a) - getReviewTime(b));
       else if (mode === 'new') learningQueue = allCards.filter(isNewCard).sort((a, b) => ((b.importance||3) - (a.importance||3)) || ((a.createdAt||0) - (b.createdAt||0))).slice(0, 10);
       else if (mode === 'weak') learningQueue = allCards.filter(isWeakCard).sort((a, b) => (b.lapses||0) - (a.lapses||0));
 
-      if (learningQueue.length === 0) {
-        showToast('このモードの学習タスクは現在ありません！');
-        return;
-      }
-
-      currentIndex = 0;
-      sessionInitialCount = learningQueue.length;
-      sessionRequeuedCount = 0;
-      isEvaluating = false;
-      switchTab('tab-learning');
-      showNextCard();
+      if (learningQueue.length === 0) { showToast('このモードの学習タスクは現在ありません！'); return; }
+      currentIndex = 0; sessionInitialCount = learningQueue.length; sessionRequeuedCount = 0; isEvaluating = false;
+      switchTab('tab-learning'); showNextCard();
     }
-
     function suspendLearning() {
       if (!confirm('学習を一時中断してホームに戻りますか？\n進捗は自動保存されています。')) return;
-      learningQueue = [];
-      if ('speechSynthesis' in window) speechSynthesis.cancel();
-      switchTab('tab-dashboard');
-      showToast('学習を中断しました。');
+      learningQueue = []; if ('speechSynthesis' in window) speechSynthesis.cancel();
+      switchTab('tab-dashboard'); showToast('学習を中断しました。');
     }
-
     function createMaskedExample(card) {
       if (card.example_masked) return card.example_masked;
       if (!card.example) return '例文は登録されていません。';
-      const word = String(card.word || '').trim();
-      if (!word) return card.example;
+      const word = String(card.word || '').trim(); if (!word) return card.example;
       const regex = /^[A-Za-z]+$/.test(word) ? new RegExp(`\\b${escapeRegExp(word)}\\b`, 'gi') : new RegExp(escapeRegExp(word), 'gi');
       return card.example.replace(regex, '______');
     }
-
-    function updateLearningProgressText() {
-      const remaining = Math.max(0, learningQueue.length - currentIndex);
-      document.getElementById('learning-progress').textContent = sessionRequeuedCount > 0 
-        ? `残り ${remaining}枚（初期${sessionInitialCount}・再出題 +${sessionRequeuedCount}）`
-        : `残り ${remaining}枚（全${sessionInitialCount}枚）`;
-    }
-
     function showNextCard() {
-      if (currentIndex >= learningQueue.length) {
-        showToast('🎉 セッション完了！お疲れ様でした！');
-        currentCard = null; switchTab('tab-dashboard'); return;
-      }
+      if (currentIndex >= learningQueue.length) { showToast('🎉 セッション完了！お疲れ様でした！'); currentCard = null; switchTab('tab-dashboard'); return; }
       currentCard = learningQueue[currentIndex];
-      updateLearningProgressText();
+      const remaining = Math.max(0, learningQueue.length - currentIndex);
+      document.getElementById('learning-progress').textContent = sessionRequeuedCount > 0 ? `残り ${remaining}枚（初期${sessionInitialCount}・再出題 +${sessionRequeuedCount}）` : `残り ${remaining}枚（全${sessionInitialCount}枚）`;
       
       document.getElementById('card-word').textContent = currentCard.word;
       document.getElementById('card-pos').textContent = `品詞: ${currentCard.pos || 'unknown'}`;
       document.getElementById('card-cefr').textContent = `CEFR: ${currentCard.cefr || 'Unknown'}`;
       document.getElementById('card-importance').textContent = `重要度: ${currentCard.importance || 3}`;
-      
       document.getElementById('card-meaning').textContent = currentCard.meaning;
       document.getElementById('card-hint').textContent = createMaskedExample(currentCard);
       document.getElementById('card-example').textContent = '';
-
-      // アニメーションリセットと非表示
-      const cardBack = document.getElementById('card-back');
-      cardBack.className = 'card-back-hidden';
       
-      document.getElementById('eval-buttons').style.display = 'none';
-      document.getElementById('btn-show-answer').style.display = 'block';
+      document.getElementById('card-back').className = 'card-back-hidden';
+      document.getElementById('eval-buttons').style.display = 'none'; document.getElementById('btn-show-answer').style.display = 'block';
     }
-
     function showAnswer() {
       if (!currentCard) return;
-      const cardBack = document.getElementById('card-back');
-      cardBack.className = 'card-back-visible'; // アニメーション発火
-      
-      document.getElementById('btn-show-answer').style.display = 'none';
-      document.getElementById('eval-buttons').style.display = 'flex';
+      document.getElementById('card-back').className = 'card-back-visible';
+      document.getElementById('btn-show-answer').style.display = 'none'; document.getElementById('eval-buttons').style.display = 'flex';
       document.getElementById('card-example').textContent = currentCard.example || '例文は登録されていません。';
     }
-
     function speakWord() {
       if (!currentCard || !('speechSynthesis' in window)) return;
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(currentCard.word);
-      utterance.lang = 'en-US';
-      speechSynthesis.speak(utterance);
+      speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(currentCard.word); utterance.lang = 'en-US'; speechSynthesis.speak(utterance);
     }
-
     function evaluateCard(evaluation) {
-      if (!currentCard || isEvaluating) return;
-      if (document.getElementById('card-back').className === 'card-back-hidden') return; // 答え見る前ガード
-
+      if (!currentCard || isEvaluating || document.getElementById('card-back').className === 'card-back-hidden') return;
       isEvaluating = true;
       try {
-        const now = new Date().getTime();
-        currentCard = normalizeCard(currentCard);
-
+        const now = new Date().getTime(); currentCard = normalizeCard(currentCard);
         if (evaluation === 'forgot') {
-          currentCard.status = 'learning'; currentCard.repetition = 0;
-          currentCard.lapses = (currentCard.lapses || 0) + 1;
-          currentCard.efactor = Math.max(1.3, currentCard.efactor - 0.2);
-          currentCard.interval = 0; currentCard.nextReviewDate = now + (10 * 60 * 1000);
+          currentCard.status = 'learning'; currentCard.repetition = 0; currentCard.lapses = (currentCard.lapses || 0) + 1;
+          currentCard.efactor = Math.max(1.3, currentCard.efactor - 0.2); currentCard.interval = 0; currentCard.nextReviewDate = now + 600000;
         } else if (evaluation === 'hard') {
-          currentCard.status = 'review'; currentCard.repetition += 1;
-          currentCard.efactor = Math.max(1.3, currentCard.efactor - 0.15);
-          currentCard.interval = currentCard.repetition <= 1 ? 1 : Math.max(1, Math.round(currentCard.interval * 1.2));
-          currentCard.nextReviewDate = now + (currentCard.interval * 86400000);
+          currentCard.status = 'review'; currentCard.repetition += 1; currentCard.efactor = Math.max(1.3, currentCard.efactor - 0.15);
+          currentCard.interval = currentCard.repetition <= 1 ? 1 : Math.max(1, Math.round(currentCard.interval * 1.2)); currentCard.nextReviewDate = now + (currentCard.interval * 86400000);
         } else if (evaluation === 'good') {
-          currentCard.status = 'review'; currentCard.lapses = Math.max(0, (currentCard.lapses || 0) - 1);
-          currentCard.repetition += 1;
-          currentCard.interval = currentCard.repetition === 1 ? 1 : (currentCard.repetition === 2 ? 6 : Math.max(1, Math.round(currentCard.interval * currentCard.efactor)));
-          currentCard.nextReviewDate = now + (currentCard.interval * 86400000);
+          currentCard.status = 'review'; currentCard.lapses = Math.max(0, (currentCard.lapses || 0) - 1); currentCard.repetition += 1;
+          currentCard.interval = currentCard.repetition === 1 ? 1 : (currentCard.repetition === 2 ? 6 : Math.max(1, Math.round(currentCard.interval * currentCard.efactor))); currentCard.nextReviewDate = now + (currentCard.interval * 86400000);
         } else if (evaluation === 'easy') {
-          currentCard.status = 'review'; currentCard.lapses = Math.max(0, (currentCard.lapses || 0) - 2);
-          currentCard.repetition += 1;
-          currentCard.efactor = Math.min(MAX_EFACTOR, currentCard.efactor + 0.15);
-          currentCard.interval = currentCard.repetition === 1 ? 2 : (currentCard.repetition === 2 ? 8 : Math.max(1, Math.round(currentCard.interval * currentCard.efactor * 1.3)));
-          currentCard.nextReviewDate = now + (currentCard.interval * 86400000);
+          currentCard.status = 'review'; currentCard.lapses = Math.max(0, (currentCard.lapses || 0) - 2); currentCard.repetition += 1; currentCard.efactor = Math.min(MAX_EFACTOR, currentCard.efactor + 0.15);
+          currentCard.interval = currentCard.repetition === 1 ? 2 : (currentCard.repetition === 2 ? 8 : Math.max(1, Math.round(currentCard.interval * currentCard.efactor * 1.3))); currentCard.nextReviewDate = now + (currentCard.interval * 86400000);
         }
 
-        const allCards = getCards();
-        const cardIndex = allCards.findIndex(c => c.id === currentCard.id);
+        const allCards = getCards(), cardIndex = allCards.findIndex(c => c.id === currentCard.id);
         if (cardIndex !== -1) { allCards[cardIndex] = currentCard; saveCards(allCards, { warnNearLimit: false }); }
+        if (evaluation === 'forgot') { learningQueue.push({ ...currentCard }); sessionRequeuedCount++; }
 
-        if (evaluation === 'forgot') {
-          learningQueue.push({ ...currentCard });
-          sessionRequeuedCount++;
-        }
-
-        recordActivity(); // 優しい記録システムへ学習を記録
-        currentIndex++;
-        showNextCard();
-      } finally {
-        isEvaluating = false;
-      }
+        recordActivity(); currentIndex++; showNextCard();
+      } finally { isEvaluating = false; }
     }
-
     document.addEventListener('keydown', event => {
-      const learningActive = document.getElementById('tab-learning').classList.contains('active');
-      if (!learningActive || event.repeat || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+      if (!document.getElementById('tab-learning').classList.contains('active') || event.repeat || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
       const answerVisible = document.getElementById('card-back').className !== 'card-back-hidden';
-
       if (event.code === 'Space' && !answerVisible) { event.preventDefault(); showAnswer(); }
       else if (answerVisible) {
-        if (event.key === '1') evaluateCard('forgot');
-        if (event.key === '2') evaluateCard('hard');
-        if (event.key === '3') evaluateCard('good');
-        if (event.key === '4') evaluateCard('easy');
+        if (event.key === '1') evaluateCard('forgot'); if (event.key === '2') evaluateCard('hard');
+        if (event.key === '3') evaluateCard('good'); if (event.key === '4') evaluateCard('easy');
       }
     });
 
     // ==========================================
-    // AIインポート
-    // ==========================================
-    function handleImport() {
-      let text = document.getElementById('import-textarea').value.trim();
-      if (!text) { showToast('JSONが貼り付けられていません。'); return; }
-      
-      text = text.replace(/^```json\s*/i, '').replace(/^
-```\s*/i, '').replace(/```$/i, '').trim();
-      const start = text.indexOf('['), end = text.lastIndexOf(']');
-      if (start !== -1 && end !== -1 && end > start) text = text.slice(start, end + 1);
-
-      try {
-        const newCards = JSON.parse(text);
-        if (!Array.isArray(newCards)) throw new Error('配列ではありません');
-        
-        const existingCards = normalizeCardsForSave(getCards());
-        const existingKeys = new Set(existingCards.map(makeDuplicateKey));
-        let addedCount = 0;
-        const skippedWords = [];
-        const invalidItems = [];
-
-        newCards.forEach((item, index) => {
-          if (!item || typeof item !== 'object' || typeof item.word !== 'string' || typeof item.meaning !== 'string' || !item.word.trim() || !item.meaning.trim()) {
-             invalidItems.push(item && item.word ? item.word : `データ${index+1}番目`);
-             return;
-          }
-          const card = normalizeCard({ ...item, status: 'new', repetition: 0, interval: 0, lapses: 0, createdAt: new Date().getTime() });
-          const key = makeDuplicateKey(card);
-          
-          if (existingKeys.has(key)) {
-             skippedWords.push(`${card.word}（${card.meaning}）`);
-             return;
-          }
-          existingCards.push(card); 
-          existingKeys.add(key); 
-          addedCount++;
-        });
-
-        if (saveCards(existingCards)) {
-          showToast(`✅ ${addedCount}件の単語をインポートしました！`);
-          document.getElementById('import-textarea').value = '';
-          populateCefrFilter(); renderVocabList(); 
-          
-          const resultArea = document.getElementById('import-result');
-          const summaryElem = document.getElementById('import-summary');
-          const detailsElem = document.getElementById('import-details');
-          resultArea.style.display = 'block';
-          detailsElem.textContent = '';
-          
-          let summaryText = `✅ ${addedCount}件を追加しました。`;
-          if (skippedWords.length > 0) summaryText += ` 🔄 ${skippedWords.length}件の重複をスキップ。`;
-          if (invalidItems.length > 0) summaryText += ` ⚠️ ${invalidItems.length}件の形式不備をスキップ。`;
-          summaryElem.textContent = summaryText;
-
-          const summarizeList = (arr) => arr.length <= 30 ? arr.join(', ') : arr.slice(0, 30).join(', ') + ` ほか${arr.length - 30}件`;
-          
-          if (skippedWords.length > 0) {
-            const p = document.createElement('p'); p.innerHTML = `<strong>重複スキップ: </strong>${summarizeList(skippedWords)}`; detailsElem.appendChild(p);
-          }
-          if (invalidItems.length > 0) {
-            const p = document.createElement('p'); p.innerHTML = `<strong>形式不備スキップ: </strong>${summarizeList(invalidItems)}`; detailsElem.appendChild(p);
-          }
-        }
-      } catch (error) {
-        showToast('❌ JSONの形式が正しくありません。');
-      }
-    }
-
-    function copySampleJson() {
-      navigator.clipboard.writeText(document.getElementById('sample-json-code').textContent).then(() => showToast('コピーしました！'));
-    }
-
-    // ==========================================
-    // リスト管理・一括操作
+    // リスト管理・一括操作 (エスケープ強化版)
     // ==========================================
     function populateCefrFilter() {
-      const select = document.getElementById('cefr-filter');
-      const val = select.value || 'all';
+      const select = document.getElementById('cefr-filter'), val = select.value || 'all';
       const vals = Array.from(new Set(getValidCards().map(c => c.cefr).filter(Boolean))).sort();
       select.innerHTML = '<option value="all">全CEFR</option>';
       vals.forEach(v => { const opt = document.createElement('option'); opt.value = opt.textContent = v; select.appendChild(opt); });
@@ -1187,27 +607,29 @@
       ul.innerHTML = filtered.length ? '' : '<p class="small-note">表示できる単語がありません。</p>';
       filtered.forEach(c => ul.appendChild(editingCardId === c.id ? createEditListItem(c) : createViewListItem(c)));
 
-      // リスト再描画時に「全て選択」のチェックを外す
       const selectAllCb = document.getElementById('select-all-cb');
       if (selectAllCb) selectAllCb.checked = false;
     }
 
     function createViewListItem(c) {
       const li = document.createElement('li'); li.className = 'word-item';
-      li.innerHTML = `
+      let html = `
         <div style="display: flex; align-items: center; padding-top: 4px;">
-          <input type="checkbox" class="bulk-cb" value="${c.id}" style="width: 18px; height: 18px; cursor: pointer;">
+          <input type="checkbox" class="bulk-cb" value="${escapeHTML(c.id)}" style="width: 18px; height: 18px; cursor: pointer;">
         </div>
         <div class="word-main">
-          <div class="word-head">${c.word}</div><div class="word-meaning">${c.meaning}</div>
-          <span class="list-info">品詞: ${c.pos} | CEFR: ${c.cefr} | 重要度: ${c.importance}</span>
-          <span class="list-info">状態: ${c.status} | 学習: ${c.repetition}回 | 次回: ${formatDate(c.nextReviewDate)}</span>
-        </div>
+          <div class="word-head">${escapeHTML(c.word)}</div><div class="word-meaning">${escapeHTML(c.meaning)}</div>
+          <span class="list-info">品詞: ${escapeHTML(c.pos)} | CEFR: ${escapeHTML(c.cefr)} | 重要度: ${c.importance}</span>
+          <span class="list-info">状態: ${c.status} | 学習: ${c.repetition}回 | 次回: ${formatDate(c.nextReviewDate)}</span>`;
+      
+      if (c.example) html += `<span class="list-info">例文: ${escapeHTML(c.example)}</span>`;
+      
+      html += `</div>
         <div class="word-actions">
-          <button class="btn btn-secondary" onclick="editingCardId='${c.id}';renderVocabList()">編集</button>
-          <button class="btn btn-danger" onclick="deleteCard('${c.id}')">削除</button>
+          <button class="btn btn-secondary" onclick="editingCardId='${escapeHTML(c.id)}';renderVocabList()">編集</button>
+          <button class="btn btn-danger" onclick="deleteCard('${escapeHTML(c.id)}')">削除</button>
         </div>`;
-      return li;
+      li.innerHTML = html; return li;
     }
 
     function createEditListItem(c) {
@@ -1216,14 +638,16 @@
         <div class="edit-form">
           <div class="word-head">カードを編集</div>
           <div class="edit-grid">
-            <label>単語<input id="e-w-${c.id}" value="${c.word}"></label>
-            <label>意味<input id="e-m-${c.id}" value="${c.meaning}"></label>
-            <label>品詞<input id="e-p-${c.id}" value="${c.pos}"></label>
-            <label>CEFR<input id="e-c-${c.id}" value="${c.cefr}"></label>
-            <label class="full">例文<textarea id="e-ex-${c.id}">${c.example}</textarea></label>
+            <label>単語<input id="e-w-${escapeHTML(c.id)}" value="${escapeHTML(c.word)}"></label>
+            <label>意味<input id="e-m-${escapeHTML(c.id)}" value="${escapeHTML(c.meaning)}"></label>
+            <label>品詞<input id="e-p-${escapeHTML(c.id)}" value="${escapeHTML(c.pos)}"></label>
+            <label>CEFR<input id="e-c-${escapeHTML(c.id)}" value="${escapeHTML(c.cefr)}"></label>
+            <label class="full">例文<textarea id="e-ex-${escapeHTML(c.id)}">${escapeHTML(c.example)}</textarea></label>
+            <!-- 抜け落ちていた「マスク例文」を復活 -->
+            <label class="full">マスク例文<textarea id="e-exm-${escapeHTML(c.id)}">${escapeHTML(c.example_masked)}</textarea></label>
           </div>
           <div class="edit-actions">
-            <button class="btn btn-primary" onclick="saveEdit('${c.id}')">保存</button>
+            <button class="btn btn-primary" onclick="saveEdit('${escapeHTML(c.id)}')">保存</button>
             <button class="btn btn-muted" onclick="editingCardId=null;renderVocabList()">取消</button>
           </div>
         </div>`;
@@ -1236,7 +660,7 @@
       const updated = normalizeCard({ ...cards[idx], 
         word: document.getElementById(`e-w-${id}`).value, meaning: document.getElementById(`e-m-${id}`).value,
         pos: document.getElementById(`e-p-${id}`).value, cefr: document.getElementById(`e-c-${id}`).value,
-        example: document.getElementById(`e-ex-${id}`).value
+        example: document.getElementById(`e-ex-${id}`).value, example_masked: document.getElementById(`e-exm-${id}`).value
       });
       if (!updated.word || !updated.meaning) { showToast('単語と意味は必須です。'); return; }
       cards[idx] = updated; saveCards(cards); editingCardId = null; renderVocabList(); showToast('保存しました。');
@@ -1249,57 +673,74 @@
       renderVocabList(); showToast('削除しました。');
     }
 
-    // ==========================================
-    // 一括削除機能
-    // ==========================================
-    function toggleSelectAll(checkbox) {
-      document.querySelectorAll('.bulk-cb').forEach(cb => cb.checked = checkbox.checked);
-    }
-
+    function toggleSelectAll(checkbox) { document.querySelectorAll('.bulk-cb').forEach(cb => cb.checked = checkbox.checked); }
     function deleteSelectedCards() {
       const checkedBoxes = document.querySelectorAll('.bulk-cb:checked');
-      if (checkedBoxes.length === 0) {
-        showToast('削除する単語が選択されていません。');
-        return;
-      }
-      if (!confirm(`選択した ${checkedBoxes.length} 件の単語を本当に削除しますか？\nこの操作は元に戻せません。`)) {
-        return;
-      }
-
+      if (checkedBoxes.length === 0) { showToast('削除する単語が選択されていません。'); return; }
+      if (!confirm(`選択した ${checkedBoxes.length} 件の単語を本当に削除しますか？\nこの操作は元に戻せません。`)) return;
       const idsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
-      const currentCards = getCards();
-      const newCards = currentCards.filter(c => !idsToDelete.includes(c.id));
-
+      const newCards = getCards().filter(c => !idsToDelete.includes(c.id));
       if (saveCards(newCards, { warnNearLimit: false })) {
         if (idsToDelete.includes(editingCardId)) editingCardId = null;
-        renderVocabList();
-        showToast(`🗑️ ${idsToDelete.length} 件の単語を一括削除しました。`);
+        renderVocabList(); showToast(`🗑️ ${idsToDelete.length} 件の単語を一括削除しました。`);
       }
     }
 
     // ==========================================
-    // バックアップ・復元
+    // AIインポート・バックアップ
     // ==========================================
+    function handleImport() {
+      let text = document.getElementById('import-textarea').value.trim();
+      if (!text) { showToast('JSONが貼り付けられていません。'); return; }
+      text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim();
+      const start = text.indexOf('['), end = text.lastIndexOf(']');
+      if (start !== -1 && end !== -1 && end > start) text = text.slice(start, end + 1);
+
+      try {
+        const newCards = JSON.parse(text);
+        if (!Array.isArray(newCards)) throw new Error('配列ではありません');
+        const existingCards = normalizeCardsForSave(getCards()), existingKeys = new Set(existingCards.map(makeDuplicateKey));
+        let addedCount = 0; const skippedWords = [], invalidItems = [];
+
+        newCards.forEach((item, index) => {
+          if (!item || typeof item !== 'object' || typeof item.word !== 'string' || typeof item.meaning !== 'string' || !item.word.trim() || !item.meaning.trim()) {
+             invalidItems.push(item && item.word ? item.word : `データ${index+1}番目`); return;
+          }
+          const card = normalizeCard({ ...item, status: 'new', repetition: 0, interval: 0, lapses: 0, createdAt: new Date().getTime() });
+          const key = makeDuplicateKey(card);
+          if (existingKeys.has(key)) { skippedWords.push(`${card.word}（${card.meaning}）`); return; }
+          existingCards.push(card); existingKeys.add(key); addedCount++;
+        });
+
+        if (saveCards(existingCards)) {
+          showToast(`✅ ${addedCount}件の単語をインポートしました！`); document.getElementById('import-textarea').value = '';
+          populateCefrFilter(); renderVocabList(); 
+          const resultArea = document.getElementById('import-result'), summaryElem = document.getElementById('import-summary'), detailsElem = document.getElementById('import-details');
+          resultArea.style.display = 'block'; detailsElem.textContent = '';
+          let summaryText = `✅ ${addedCount}件を追加しました。`;
+          if (skippedWords.length > 0) summaryText += ` 🔄 ${skippedWords.length}件の重複をスキップ。`;
+          if (invalidItems.length > 0) summaryText += ` ⚠️ ${invalidItems.length}件の形式不備をスキップ。`;
+          summaryElem.textContent = summaryText;
+          const summarizeList = (arr) => arr.length <= 30 ? arr.join(', ') : arr.slice(0, 30).join(', ') + ` ほか${arr.length - 30}件`;
+          if (skippedWords.length > 0) { const p = document.createElement('p'); p.innerHTML = `<strong>重複スキップ: </strong>${escapeHTML(summarizeList(skippedWords))}`; detailsElem.appendChild(p); }
+          if (invalidItems.length > 0) { const p = document.createElement('p'); p.innerHTML = `<strong>形式不備スキップ: </strong>${escapeHTML(summarizeList(invalidItems))}`; detailsElem.appendChild(p); }
+        }
+      } catch (e) { showToast('❌ JSONの形式が正しくありません。'); }
+    }
     function exportData() {
-      const data = JSON.stringify(getValidCards(), null, 2);
-      const blob = new Blob([data], { type: 'application/json' }), a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); 
-      const d = new Date();
+      const data = JSON.stringify(getValidCards(), null, 2), blob = new Blob([data], { type: 'application/json' }), a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); const d = new Date();
       a.download = `memoria_lite_backup_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
       a.click(); showToast('バックアップをダウンロードしました。');
     }
-
     function importBackup(e) {
       const file = e.target.files[0]; if (!file) return;
       if (!confirm('⚠️ 現在のデータは完全に上書きされます。よろしいですか？')) { e.target.value = ''; return; }
-      
       const reader = new FileReader();
       reader.onload = ev => {
         try {
-          const data = JSON.parse(ev.target.result);
-          if (!Array.isArray(data)) throw new Error('配列ではありません');
-          saveCards(normalizeCardsForSave(data));
-          renderVocabList(); showToast('✅ 復元が完了しました。');
+          const data = JSON.parse(ev.target.result); if (!Array.isArray(data)) throw new Error('配列ではありません');
+          saveCards(normalizeCardsForSave(data)); renderVocabList(); showToast('✅ 復元が完了しました。');
         } catch (error) { alert('エラー: 正しいバックアップファイルを選択してください。'); }
       };
       reader.readAsText(file); e.target.value = '';
