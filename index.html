@@ -129,6 +129,7 @@
     .edit-form { width: 100%; } .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; } .edit-grid label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--text-muted); font-weight: 700; }
     .edit-grid label.full { grid-column: 1 / -1; } .edit-grid textarea { height: 72px; margin-bottom: 0; font-family: inherit; font-size: 14px; } .edit-actions { display: flex; gap: 8px; margin-top: 10px; } .edit-actions .btn { flex: 1; }
     .small-note { font-size: 13px; color: var(--text-muted); } .storage-note { padding: 8px 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--info-border); margin: 10px 0; } .storage-note.warning { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); font-weight: 700; }
+    .import-help { margin: 0 0 10px; }
     .result-box { display: none; margin-top: 18px; padding: 15px; border-radius: 10px; background-color: var(--info-bg); border: 1px solid var(--info-border); } .result-box h4 { margin-top: 0; margin-bottom: 8px; color: var(--info-heading); }
     pre { background: #111827; color: #E5E7EB; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 12px; }
 
@@ -270,6 +271,11 @@
     <div id="tab-import" class="tab-content">
       <h2>AIから単語をインポート</h2>
       <div class="panel">
+        <!-- fix 3: 入力欄の上に短い説明を1行戻す（プレースホルダーは短いまま維持） -->
+        <p class="small-note import-help">
+          カスタムGPTが出力したJSONをそのまま貼り付けてください。
+          うまくいかない場合は、最初が <strong>[</strong>、最後が <strong>]</strong> になっているか確認してください。
+        </p>
         <textarea id="import-textarea" placeholder="ここにAIが出力したJSON配列を貼り付けてください。"></textarea>
         <button onclick="handleImport()" class="btn btn-secondary" style="width: 100%; padding: 15px;">インポートを実行</button>
         <div id="import-result" class="result-box">
@@ -296,7 +302,7 @@
     const MAX_IMPORT_DETAIL_ITEMS = 30;
     const MAX_EFACTOR = 3.0;
 
-    // インポート時に外部JSONから採用する語彙フィールドの許可リスト（fix 2: 許可リスト方式）
+    // インポート時に外部JSONから採用する語彙フィールドの許可リスト
     const IMPORT_ALLOWED_FIELDS = ['word', 'meaning', 'pos', 'cefr', 'importance', 'example', 'example_masked'];
 
     let learningQueue = [];
@@ -500,7 +506,7 @@
     }
     // 重複判定キー（word+pos+meaning）
     function makeDuplicateKey(c) { return [normalizeKeyText(c.word), normalizeKeyText(c.pos), normalizeKeyText(c.meaning)].join('::'); }
-    // ID重複・欠落を解消する（fix 3: 復元時の再採番に使用）
+    // ID重複・欠落を解消する（復元時の再採番に使用）
     function dedupeCardIds(cards) {
       const seen = new Set();
       return (Array.isArray(cards) ? cards : []).map(c => {
@@ -589,7 +595,10 @@
       if (card.example_masked) return card.example_masked;
       if (!card.example) return '例文は登録されていません。';
       const word = String(card.word || '').trim(); if (!word) return card.example;
-      const regex = /^[A-Za-z]+$/.test(word) ? new RegExp(`\\b${escapeRegExp(word)}\\b`, 'gi') : new RegExp(escapeRegExp(word), 'gi');
+      // fix 1: テンプレートリテラル内の \\b は誤解を招くため、明示的な文字列連結にする
+      const regex = /^[A-Za-z]+$/.test(word)
+        ? new RegExp('\\b' + escapeRegExp(word) + '\\b', 'gi')
+        : new RegExp(escapeRegExp(word), 'gi');
       return card.example.replace(regex, '______');
     }
     function showNextCard() {
@@ -719,13 +728,13 @@
         </div>`;
       li.innerHTML = html;
 
-      // fix 1: idを文字列連結せず、カードオブジェクトをクロージャで保持する
+      // idを文字列連結せず、カードオブジェクトをクロージャで保持する
       li.querySelector('[data-action="edit"]').addEventListener('click', () => { editingCardId = c.id; renderVocabList(); });
       li.querySelector('[data-action="delete"]').addEventListener('click', () => deleteCard(c.id));
       return li;
     }
 
-    // fix 1: 編集フォームも data-field + 要素相対参照に統一（getElementById(id) を廃止）
+    // 編集フォームも data-field + 要素相対参照に統一（getElementById(id) を廃止）
     function createEditListItem(c) {
       const li = document.createElement('li'); li.className = 'word-item';
       li.innerHTML = `
@@ -753,7 +762,7 @@
       return li;
     }
 
-    // fix 1: フォーム要素から data-field 経由で値を取得する（DOM id 検索を使わない）
+    // フォーム要素から data-field 経由で値を取得する（DOM id 検索を使わない）
     function readEditForm(form) {
       const get = (field) => { const el = form.querySelector(`[data-field="${field}"]`); return el ? el.value : ''; };
       return {
@@ -787,7 +796,12 @@
     function deleteSelectedCards() {
       const checkedBoxes = document.querySelectorAll('.bulk-cb:checked');
       if (checkedBoxes.length === 0) { showToast('削除する単語が選択されていません。'); return; }
-      if (!confirm(`選択した ${checkedBoxes.length} 件の単語を本当に削除しますか？\nこの操作は元に戻せません。`)) return;
+      // fix 5: 大量削除事故を防ぐため、文言を強化
+      if (!confirm(
+        `選択した ${checkedBoxes.length} 件の単語を削除します。\n\n` +
+        `この操作は元に戻せません。\n` +
+        `削除前にバックアップを取っていない場合は、キャンセルしてください。`
+      )) return;
       const idsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
       const newCards = getCards().filter(c => !idsToDelete.includes(c.id));
       if (saveCards(newCards, { warnNearLimit: false })) {
@@ -799,7 +813,7 @@
     // ==========================================
     // AIインポート・バックアップ
     // ==========================================
-    // 外部JSONから語彙フィールドのみ採用する（fix 2: 許可リスト方式）
+    // 外部JSONから語彙フィールドのみ採用する（許可リスト方式）
     function pickImportableFields(item) {
       const clean = {};
       IMPORT_ALLOWED_FIELDS.forEach(k => { if (k in item) clean[k] = item[k]; });
@@ -843,7 +857,17 @@
           if (skippedWords.length > 0) { const p = document.createElement('p'); p.innerHTML = `<strong>重複スキップ: </strong>${escapeHTML(summarizeList(skippedWords))}`; detailsElem.appendChild(p); }
           if (invalidItems.length > 0) { const p = document.createElement('p'); p.innerHTML = `<strong>形式不備スキップ: </strong>${escapeHTML(summarizeList(invalidItems))}`; detailsElem.appendChild(p); }
         }
-      } catch (e) { showToast('❌ JSONの形式が正しくありません。'); }
+      } catch (e) {
+        // fix 2: エラー時は消えないalertで原因と確認ポイントを案内する
+        console.error('JSONインポートエラー:', e);
+        alert(
+          'JSONの形式が正しくありません。\n\n' +
+          '次の点を確認してください：\n' +
+          '・最初が [ で始まっているか\n' +
+          '・最後が ] で終わっているか\n' +
+          '・途中でコピーが切れていないか'
+        );
+      }
     }
     function exportData(prefix = 'memoria_lite_backup') {
       const data = JSON.stringify(getValidCards(), null, 2), blob = new Blob([data], { type: 'application/json' }), a = document.createElement('a');
@@ -874,7 +898,7 @@
         try {
           const data = JSON.parse(ev.target.result);
           validateBackupArray(data); // 不正データは黙って捨てず、明示エラー
-          // fix 3: ID重複・欠落を解消してから保存（findIndex が常に正しい1枚を掴めるように）
+          // ID重複・欠落を解消してから保存（findIndex が常に正しい1枚を掴めるように）
           const normalized = normalizeCardsForSave(dedupeCardIds(data));
           if (!saveCards(normalized)) return;
           editingCardId = null;
