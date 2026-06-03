@@ -240,7 +240,7 @@
       <h2>単語リストとデータ管理</h2>
       <div class="panel info-panel">
         <h3 style="margin-top: 0;">💾 バックアップと復元</h3>
-        <p class="small-note">PC移行やデータ消失に備えて定期的に保存してください。バックアップには単語に加え、学習のきろく（活動記録）と週間目標も含まれます。Lite版は軽量運用向けのため、1,000〜2,000語程度までの利用を推奨します。</p>
+        <p class="small-note">PC移行やデータ消失に備えて定期的に保存してください。Lite版は軽量運用向けのため、1,000〜2,000語程度までの利用を推奨します。</p>
         <p id="storage-usage" class="small-note storage-note">保存容量: 計算中...</p>
         <button onclick="exportData()" class="btn btn-primary" style="margin-bottom: 10px; width: 100%;">⬇️ 全データをエクスポート JSON</button>
         <input type="file" id="import-file" accept=".json,application/json" style="display: none;" onchange="importBackup(event)">
@@ -301,7 +301,6 @@
     const LOCAL_STORAGE_LIMIT_BYTES = 5 * 1024 * 1024;
     const MAX_IMPORT_DETAIL_ITEMS = 30;
     const MAX_EFACTOR = 3.0;
-    const BACKUP_SCHEMA = 'memoria_lite_backup_v1';
 
     // インポート時に外部JSONから採用する語彙フィールドの許可リスト
     const IMPORT_ALLOWED_FIELDS = ['word', 'meaning', 'pos', 'cefr', 'importance', 'example', 'example_masked'];
@@ -420,29 +419,6 @@
     function getActivityData() {
       try { const d = JSON.parse(localStorage.getItem(ACTIVITY_STORAGE_KEY) || '{}'); return (d && typeof d === 'object') ? d : {}; }
       catch (_) { return {}; }
-    }
-    // 実在する YYYY-MM-DD かどうか（月13・日99 などを弾く）
-    function isRealDateStamp(key) {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return false;
-      const [y, m, d] = key.split('-').map(Number);
-      const dt = new Date(y, m - 1, d);
-      return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
-    }
-    // バックアップ復元用：活動データを「実在日付: 非負整数」の組だけに浄化する
-    function sanitizeActivityData(obj) {
-      const clean = {};
-      if (!obj || typeof obj !== 'object') return clean;
-      Object.keys(obj).forEach(key => {
-        if (!isRealDateStamp(key)) return;
-        const n = Number(obj[key]);
-        if (Number.isFinite(n) && n >= 0) clean[key] = Math.round(n);
-      });
-      return clean;
-    }
-    // バックアップ復元用：週間目標（正の整数のみ採用、不正なら null）
-    function sanitizeWeeklyGoal(value) {
-      const g = parseInt(value, 10);
-      return (!isNaN(g) && g > 0) ? g : null;
     }
     function getWeeklyTotal(activityData) {
       let total = 0; const now = new Date();
@@ -565,6 +541,7 @@
 
     function switchTab(tabId) {
       try {
+        window.scrollTo(0, 0); // タブ切り替え時は常に画面先頭から表示（SPAのスクロール位置取り残しを防ぐ）
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-nav'));
@@ -893,16 +870,8 @@
         );
       }
     }
-    // エクスポート形式：単語カードに加え、学習のきろく（活動データ）と週間目標も同梱する
     function exportData(prefix = 'memoria_lite_backup') {
-      const payload = {
-        schema: BACKUP_SCHEMA,
-        exportedAt: new Date().toISOString(),
-        cards: getValidCards(),
-        activity: getActivityData(),
-        weeklyGoal: parseInt(localStorage.getItem(WEEKLY_GOAL_KEY) || '100', 10) || 100
-      };
-      const data = JSON.stringify(payload, null, 2), blob = new Blob([data], { type: 'application/json' }), a = document.createElement('a');
+      const data = JSON.stringify(getValidCards(), null, 2), blob = new Blob([data], { type: 'application/json' }), a = document.createElement('a');
       a.href = URL.createObjectURL(blob); const d = new Date();
       const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
       a.download = `${prefix}_${stamp}.json`;
@@ -918,29 +887,9 @@
       );
       if (invalidIndex !== -1) throw new Error(`データが破損しているか、形式が異なります。${invalidIndex + 1}番目のカードに必須項目の問題があります。`);
     }
-    // 旧形式（カード配列のみ）と新形式（{schema, cards, activity, weeklyGoal}）の両方を解釈する
-    function parseBackup(rawText) {
-      const parsed = JSON.parse(rawText);
-      // 旧形式：カードの配列そのもの
-      if (Array.isArray(parsed)) {
-        return { cards: parsed, activity: null, weeklyGoal: null };
-      }
-      // 新形式：オブジェクト（cards 配列が必須）
-      if (parsed && typeof parsed === 'object') {
-        if (!Array.isArray(parsed.cards)) {
-          throw new Error('cards 配列が見つかりません。バックアップファイルを確認してください。');
-        }
-        return {
-          cards: parsed.cards,
-          activity: (parsed.activity && typeof parsed.activity === 'object') ? parsed.activity : null,
-          weeklyGoal: sanitizeWeeklyGoal(parsed.weeklyGoal)
-        };
-      }
-      throw new Error('無効なデータ形式です。JSONの配列またはオブジェクトではありません。');
-    }
     function importBackup(e) {
       const file = e.target.files[0]; if (!file) return;
-      if (!confirm('⚠️ 現在の学習データはすべて消去され、選択したバックアップで完全に上書きされます。\n（単語に加え、ファイルに含まれていれば学習のきろく・週間目標も上書きされます）\n本当によろしいですか？')) { e.target.value = ''; return; }
+      if (!confirm('⚠️ 現在の学習データはすべて消去され、選択したバックアップで完全に上書きされます。\n本当によろしいですか？')) { e.target.value = ''; return; }
       // 復元前バックアップの提案
       if (getCards().length > 0 && confirm('復元前に、現在のデータをバックアップとして保存しますか？')) {
         exportData('memoria_lite_before_restore');
@@ -948,29 +897,14 @@
       const reader = new FileReader();
       reader.onload = ev => {
         try {
-          // 新旧どちらの形式でも解釈する
-          const { cards, activity, weeklyGoal } = parseBackup(ev.target.result);
-          validateBackupArray(cards); // カード配列の中身を検証（不正なら明示エラー）
-
+          const data = JSON.parse(ev.target.result);
+          validateBackupArray(data); // 不正データは黙って捨てず、明示エラー
           // ID重複・欠落を解消してから保存（findIndex が常に正しい1枚を掴めるように）
-          const normalized = normalizeCardsForSave(dedupeCardIds(cards));
+          const normalized = normalizeCardsForSave(dedupeCardIds(data));
           if (!saveCards(normalized)) return;
-
-          // バックアップに含まれていれば、学習のきろく・週間目標も復元する（旧形式では現状を据え置き）
-          let activityRestored = false;
-          if (activity) {
-            if (safeSetItem(ACTIVITY_STORAGE_KEY, JSON.stringify(sanitizeActivityData(activity)))) {
-              activityRestored = true;
-            }
-          }
-          if (weeklyGoal !== null) {
-            safeSetItem(WEEKLY_GOAL_KEY, String(weeklyGoal));
-          }
-
           editingCardId = null;
           populateCefrFilter(); renderVocabList(); // CEFRフィルタも更新
-          renderActivityStats();                   // ヒートマップ・週間目標バーを即時反映
-          showToast(activityRestored ? '✅ 復元が完了しました（学習のきろくも復元しました）。' : '✅ 復元が完了しました。');
+          showToast('✅ 復元が完了しました。');
         } catch (error) { alert(`エラー: ${error.message}\n正しいバックアップJSONファイルを選択してください。`); }
       };
       reader.readAsText(file); e.target.value = '';
