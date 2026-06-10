@@ -491,7 +491,7 @@
         pos: normalizePos(source.pos), cefr: normalizeCefr(source.cefr), importance: normalizeImportance(source.importance),
         example: String(source.example || '').trim(), example_masked: String(source.example_masked || '').trim(),
         status: normalizeStatus(source.status, repetition), repetition: repetition,
-        interval: Math.max(0, Math.round(safeNumber(source.interval, 0))), efactor: Math.max(1.3, safeNumber(source.efactor, 2.5)),
+        interval: Math.max(0, Math.round(safeNumber(source.interval, 0))), efactor: Math.min(MAX_EFACTOR, Math.max(1.3, safeNumber(source.efactor, 2.5))),
         lapses: Math.max(0, Math.round(safeNumber(source.lapses, 0))), nextReviewDate: normalizeDate(source.nextReviewDate), createdAt: normalizeDate(source.createdAt || new Date().getTime())
       };
     }
@@ -898,6 +898,9 @@
       reader.onload = ev => {
         try {
           const data = JSON.parse(ev.target.result);
+          if (!Array.isArray(data) && data && typeof data === 'object' && Array.isArray(data.cards)) {
+            throw new Error('これはPro形式のバックアップです。Lite版ではそのまま復元できません。Pro版で復元するか、必要な場合はバックアップ内の cards 配列だけを取り出してください。');
+          }
           validateBackupArray(data); // 不正データは黙って捨てず、明示エラー
           // ID重複・欠落を解消してから保存（findIndex が常に正しい1枚を掴めるように）
           const normalized = normalizeCardsForSave(dedupeCardIds(data));
