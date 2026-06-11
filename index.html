@@ -142,7 +142,7 @@
 </head>
 <body>
 
-  <nav>
+  <nav aria-label="メインナビゲーション">
     <button id="nav-dashboard" class="active-nav" onclick="switchTab('tab-dashboard')">🏠 ホーム</button>
     <button id="nav-list" onclick="switchTab('tab-list')">📋 単語管理</button>
     <button id="nav-import" onclick="switchTab('tab-import')">➕ 追加</button>
@@ -202,24 +202,24 @@
     <!-- 🎓 学習モード -->
     <div id="tab-learning" class="tab-content">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px;">
-        <div id="learning-progress" style="font-weight: bold; font-size: 16px;"></div>
+        <div id="learning-progress" style="font-weight: bold; font-size: 16px;" aria-live="polite"></div>
         <button onclick="suspendLearning()" class="btn btn-muted" style="padding: 6px 10px; font-size: 12px;">⏸️ 中断して戻る</button>
       </div>
 
-      <div class="flashcard" id="flashcard-ui">
-        <div class="word-title" id="card-word"></div>
+      <div class="flashcard" id="flashcard-ui" role="group" aria-label="フラッシュカード">
+        <div class="word-title" id="card-word" lang="en" aria-live="polite"></div>
         <div class="badge-row">
           <span class="badge pos" id="card-pos"></span>
           <span class="badge cefr" id="card-cefr"></span>
           <span class="badge importance" id="card-importance"></span>
         </div>
-        <div class="hint-box"><div class="example-text" id="card-hint"></div></div>
+        <div class="hint-box"><div class="example-text" id="card-hint" lang="en"></div></div>
         <button onclick="speakWord()" class="btn" style="background: var(--border); color: var(--text-main); margin-bottom: 20px;">🔊 発音</button>
 
-        <div id="card-back" class="card-back-hidden">
+        <div id="card-back" class="card-back-hidden" aria-live="polite">
           <hr style="border-top: 1px solid var(--border); margin: 20px 0;">
           <div class="meaning-text" id="card-meaning"></div>
-          <div class="example-text" id="card-example"></div>
+          <div class="example-text" id="card-example" lang="en"></div>
         </div>
       </div>
 
@@ -250,20 +250,21 @@
       <div class="panel">
         <h3 style="margin-top: 0;">登録済み単語 <span id="total-words">0</span>件</h3>
         <div class="filters">
-          <input type="search" id="search-input" class="filter-search" placeholder="単語・意味・例文で検索" oninput="renderVocabList()">
-          <select id="status-filter" onchange="renderVocabList()"><option value="all">全状態</option><option value="new">new</option><option value="learning">learning</option><option value="review">review</option></select>
-          <select id="cefr-filter" onchange="renderVocabList()"><option value="all">全CEFR</option></select>
-          <select id="importance-filter" onchange="renderVocabList()"><option value="all">全重要度</option><option value="5">重要度 5</option><option value="4">重要度 4</option><option value="3">重要度 3</option><option value="2">重要度 2</option><option value="1">重要度 1</option></select>
+          <input type="search" id="search-input" class="filter-search" placeholder="単語・意味・例文で検索" oninput="debouncedResetListPaging()">
+          <select id="status-filter" onchange="resetListPaging()"><option value="all">全状態</option><option value="new">new</option><option value="learning">learning</option><option value="review">review</option></select>
+          <select id="cefr-filter" onchange="resetListPaging()"><option value="all">全CEFR</option></select>
+          <select id="importance-filter" onchange="resetListPaging()"><option value="all">全重要度</option><option value="5">重要度 5</option><option value="4">重要度 4</option><option value="3">重要度 3</option><option value="2">重要度 2</option><option value="1">重要度 1</option></select>
         </div>
 
         <div id="bulk-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
           <label style="display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px; cursor: pointer; color: var(--text-main);">
-            <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)" style="width: 16px; height: 16px; cursor: pointer;"> 全て選択
+            <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)" style="width: 16px; height: 16px; cursor: pointer;"> 表示中をすべて選択
           </label>
           <button onclick="deleteSelectedCards()" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">🗑️ 選択した単語を削除</button>
         </div>
 
         <ul id="vocab-list"></ul>
+        <div id="list-more" style="text-align: center; margin-top: 10px;"></div>
       </div>
     </div>
 
@@ -301,6 +302,8 @@
     const LOCAL_STORAGE_LIMIT_BYTES = 5 * 1024 * 1024;
     const MAX_IMPORT_DETAIL_ITEMS = 30;
     const MAX_EFACTOR = 3.0;
+    const LIST_PAGE_SIZE = 100;
+    const SEARCH_DEBOUNCE_MS = 300;
 
     // インポート時に外部JSONから採用する語彙フィールドの許可リスト
     const IMPORT_ALLOWED_FIELDS = ['word', 'meaning', 'pos', 'cefr', 'importance', 'example', 'example_masked'];
@@ -312,6 +315,7 @@
     let sessionInitialCount = 0;
     let sessionRequeuedCount = 0;
     let isEvaluating = false;
+    let listVisibleCount = LIST_PAGE_SIZE;
 
     function showToast(message, duration = 3000) {
       const container = document.getElementById('toast-container');
@@ -343,6 +347,15 @@
     // 汎用ユーティリティ
     // ==========================================
     function generateId() { return Date.now().toString() + '_' + Math.random().toString(36).substring(2, 9); }
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+    const _debouncedResetListPaging = debounce(() => resetListPaging(), SEARCH_DEBOUNCE_MS);
+    function debouncedResetListPaging() { _debouncedResetListPaging(); }
     function safeNumber(value, fallback) { const num = Number(value); return Number.isFinite(num) ? num : fallback; }
     function clampNumber(value, min, max, fallback) { return Math.min(max, Math.max(min, safeNumber(value, fallback))); }
     function normalizeImportance(value) { return Math.round(clampNumber(value, 1, 5, 3)); }
@@ -549,7 +562,7 @@
         if (navBtn) navBtn.classList.add('active-nav');
 
         if (tabId === 'tab-dashboard') updateDashboard();
-        if (tabId === 'tab-list') { populateCefrFilter(); renderVocabList(); updateStorageUsageDisplay(); }
+        if (tabId === 'tab-list') { populateCefrFilter(); resetListPaging(); updateStorageUsageDisplay(); }
         if (tabId === 'tab-import') document.getElementById('import-result').style.display = 'none';
       } catch (e) {
         console.error("タブ切り替えエラー:", e);
@@ -637,28 +650,32 @@
       if (!currentCard || isEvaluating || document.getElementById('card-back').className === 'card-back-hidden') return;
       isEvaluating = true;
       try {
-        const now = new Date().getTime(); currentCard = normalizeCard(currentCard);
+        const now = new Date().getTime();
+        const next = normalizeCard({ ...currentCard });
+
         if (evaluation === 'forgot') {
-          currentCard.status = 'learning'; currentCard.repetition = 0; currentCard.lapses = (currentCard.lapses || 0) + 1;
-          currentCard.efactor = Math.max(1.3, currentCard.efactor - 0.2); currentCard.interval = 0; currentCard.nextReviewDate = now + 600000;
+          next.status = 'learning'; next.repetition = 0; next.lapses = (next.lapses || 0) + 1;
+          next.efactor = Math.max(1.3, next.efactor - 0.2); next.interval = 0; next.nextReviewDate = now + 600000;
         } else if (evaluation === 'hard') {
-          currentCard.status = 'review'; currentCard.repetition += 1; currentCard.efactor = Math.max(1.3, currentCard.efactor - 0.15);
-          currentCard.interval = currentCard.repetition <= 1 ? 1 : Math.max(1, Math.round(currentCard.interval * 1.2)); currentCard.nextReviewDate = now + (currentCard.interval * 86400000);
+          next.status = 'review'; next.repetition += 1; next.efactor = Math.max(1.3, next.efactor - 0.15);
+          next.interval = next.repetition <= 1 ? 1 : Math.max(1, Math.round(next.interval * 1.2)); next.nextReviewDate = now + (next.interval * 86400000);
         } else if (evaluation === 'good') {
-          currentCard.status = 'review'; currentCard.lapses = Math.max(0, (currentCard.lapses || 0) - 1); currentCard.repetition += 1;
-          currentCard.interval = currentCard.repetition === 1 ? 1 : (currentCard.repetition === 2 ? 6 : Math.max(1, Math.round(currentCard.interval * currentCard.efactor))); currentCard.nextReviewDate = now + (currentCard.interval * 86400000);
+          next.status = 'review'; next.lapses = Math.max(0, (next.lapses || 0) - 1); next.repetition += 1;
+          next.interval = next.repetition === 1 ? 1 : (next.repetition === 2 ? 6 : Math.max(1, Math.round(next.interval * next.efactor))); next.nextReviewDate = now + (next.interval * 86400000);
         } else if (evaluation === 'easy') {
-          currentCard.status = 'review'; currentCard.lapses = Math.max(0, (currentCard.lapses || 0) - 2); currentCard.repetition += 1; currentCard.efactor = Math.min(MAX_EFACTOR, currentCard.efactor + 0.15);
-          currentCard.interval = currentCard.repetition === 1 ? 2 : (currentCard.repetition === 2 ? 8 : Math.max(1, Math.round(currentCard.interval * currentCard.efactor * 1.3))); currentCard.nextReviewDate = now + (currentCard.interval * 86400000);
+          next.status = 'review'; next.lapses = Math.max(0, (next.lapses || 0) - 2); next.repetition += 1; next.efactor = Math.min(MAX_EFACTOR, next.efactor + 0.15);
+          next.interval = next.repetition === 1 ? 2 : (next.repetition === 2 ? 8 : Math.max(1, Math.round(next.interval * next.efactor * 1.3))); next.nextReviewDate = now + (next.interval * 86400000);
         }
 
-        const allCards = getCards(), cardIndex = allCards.findIndex(c => c.id === currentCard.id);
-        if (cardIndex !== -1) {
-          allCards[cardIndex] = currentCard;
-          // 保存に失敗したら、進捗が消えたまま先へ進まない
-          if (!saveCards(allCards, { warnNearLimit: false })) return;
-        }
-        if (evaluation === 'forgot') { learningQueue.push({ ...currentCard }); sessionRequeuedCount++; }
+        const allCards = getCards(), cardIndex = allCards.findIndex(c => c.id === next.id);
+        if (cardIndex === -1) { showToast('このカードが見つかりませんでした。'); return; }
+        allCards[cardIndex] = next;
+        // 保存に失敗したら、currentCardを更新せず前進しない（二重評価を防ぐ）
+        if (!saveCards(allCards, { warnNearLimit: false })) return;
+
+        currentCard = next;
+        learningQueue[currentIndex] = { ...next };
+        if (evaluation === 'forgot') { learningQueue.push({ ...next }); sessionRequeuedCount++; }
 
         recordActivity(); currentIndex++; showNextCard();
       } finally { isEvaluating = false; }
@@ -684,27 +701,72 @@
       select.value = vals.includes(val) ? val : 'all';
     }
 
+    function resetListPaging() { listVisibleCount = LIST_PAGE_SIZE; renderVocabList(); }
+    function showMoreVocab() { listVisibleCount += LIST_PAGE_SIZE; renderVocabList(); }
+
     function renderVocabList() {
       const cards = getValidCards();
       document.getElementById('total-words').textContent = cards.length;
-      const term = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
+      const term = normalizeKeyText(document.getElementById('search-input')?.value || '');
       const sFilter = document.getElementById('status-filter')?.value || 'all';
       const cFilter = document.getElementById('cefr-filter')?.value || 'all';
       const iFilter = document.getElementById('importance-filter')?.value || 'all';
 
       const filtered = cards.filter(c =>
-        (!term || String(c.word).toLowerCase().includes(term) || String(c.meaning).toLowerCase().includes(term) || String(c.example).toLowerCase().includes(term)) &&
+        (!term || normalizeKeyText(c.word).includes(term) || normalizeKeyText(c.meaning).includes(term) || normalizeKeyText(c.example).includes(term)) &&
         (sFilter === 'all' || c.status === sFilter) &&
         (cFilter === 'all' || c.cefr === cFilter) &&
         (iFilter === 'all' || String(c.importance||3) === iFilter)
       );
 
       const ul = document.getElementById('vocab-list');
-      ul.innerHTML = filtered.length ? '' : '<p class="small-note">表示できる単語がありません。</p>';
-      filtered.forEach(c => ul.appendChild(editingCardId === c.id ? createEditListItem(c) : createViewListItem(c)));
+      const moreElement = document.getElementById('list-more');
+      // ページングや再描画で、表示中チェックの状態が消えないよう退避する
+      const checkedIds = new Set(
+        Array.from(document.querySelectorAll('#vocab-list .bulk-cb:checked')).map(cb => cb.value)
+      );
+      ul.textContent = '';
+      if (moreElement) moreElement.textContent = '';
 
-      const selectAllCb = document.getElementById('select-all-cb');
-      if (selectAllCb) selectAllCb.checked = false;
+      if (filtered.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'small-note';
+        empty.textContent = '表示できる単語がありません。';
+        ul.appendChild(empty);
+        syncSelectAllState();
+        return;
+      }
+
+      const visible = filtered.slice(0, listVisibleCount);
+      visible.forEach(c => ul.appendChild(editingCardId === c.id ? createEditListItem(c) : createViewListItem(c)));
+      document.querySelectorAll('#vocab-list .bulk-cb').forEach(cb => {
+        if (checkedIds.has(cb.value)) cb.checked = true;
+        cb.onchange = syncSelectAllState;
+      });
+
+      if (moreElement) {
+        if (filtered.length > visible.length) {
+          const remaining = filtered.length - visible.length;
+          const info = document.createElement('p');
+          info.className = 'small-note';
+          info.style.marginBottom = '6px';
+          info.textContent = `表示中 ${visible.length} / 該当 ${filtered.length}件`;
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-muted';
+          btn.style.width = '100%';
+          btn.textContent = `さらに表示（残り ${remaining}件）`;
+          btn.onclick = showMoreVocab;
+          moreElement.appendChild(info);
+          moreElement.appendChild(btn);
+        } else if (filtered.length > LIST_PAGE_SIZE) {
+          const info = document.createElement('p');
+          info.className = 'small-note';
+          info.textContent = `全 ${filtered.length}件を表示中`;
+          moreElement.appendChild(info);
+        }
+      }
+
+      syncSelectAllState();
     }
 
     // innerHTMLに埋め込む全変数（数値含む）をescapeHTMLで統一。
@@ -793,21 +855,41 @@
       populateCefrFilter(); renderVocabList(); showToast('削除しました。');
     }
 
-    function toggleSelectAll(checkbox) { document.querySelectorAll('.bulk-cb').forEach(cb => cb.checked = checkbox.checked); }
+    function syncSelectAllState() {
+      const selectAllCb = document.getElementById('select-all-cb');
+      if (!selectAllCb) return;
+      const boxes = Array.from(document.querySelectorAll('#vocab-list .bulk-cb'));
+      selectAllCb.checked = boxes.length > 0 && boxes.every(cb => cb.checked);
+      selectAllCb.indeterminate = boxes.some(cb => cb.checked) && !selectAllCb.checked;
+    }
+
+    function toggleSelectAll(checkbox) {
+      document.querySelectorAll('#vocab-list .bulk-cb').forEach(cb => cb.checked = checkbox.checked);
+      syncSelectAllState();
+    }
+
     function deleteSelectedCards() {
-      const checkedBoxes = document.querySelectorAll('.bulk-cb:checked');
+      const checkedBoxes = document.querySelectorAll('#vocab-list .bulk-cb:checked');
       if (checkedBoxes.length === 0) { showToast('削除する単語が選択されていません。'); return; }
-      // fix 5: 大量削除事故を防ぐため、文言を強化
+      // ページング導入後は表示中のチェックボックスだけが対象になるため、確認文でも明示する
       if (!confirm(
-        `選択した ${checkedBoxes.length} 件の単語を削除します。\n\n` +
-        `この操作は元に戻せません。\n` +
+        `選択した ${checkedBoxes.length} 件の単語を削除します。
+
+` +
+        `※ 削除されるのは、いま画面に表示されている中で選択した分のみです。
+` +
+        `　「さらに表示」で隠れているカードは対象になりません。
+
+` +
+        `この操作は元に戻せません。
+` +
         `削除前にバックアップを取っていない場合は、キャンセルしてください。`
       )) return;
-      const idsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
-      const newCards = getCards().filter(c => !idsToDelete.includes(c.id));
+      const idsToDelete = new Set(Array.from(checkedBoxes).map(cb => cb.value));
+      const newCards = getCards().filter(c => !idsToDelete.has(c.id));
       if (saveCards(newCards, { warnNearLimit: false })) {
-        if (idsToDelete.includes(editingCardId)) editingCardId = null;
-        populateCefrFilter(); renderVocabList(); showToast(`🗑️ ${idsToDelete.length} 件の単語を一括削除しました。`);
+        if (idsToDelete.has(editingCardId)) editingCardId = null;
+        populateCefrFilter(); resetListPaging(); showToast(`🗑️ ${idsToDelete.size} 件の単語を一括削除しました。`);
       }
     }
 
